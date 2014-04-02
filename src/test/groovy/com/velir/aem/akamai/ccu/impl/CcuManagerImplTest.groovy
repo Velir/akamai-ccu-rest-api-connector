@@ -1,6 +1,10 @@
-package com.velir.aem.akamai.ccu
+package com.velir.aem.akamai.ccu.impl
 
 import com.github.tomakehurst.wiremock.WireMockServer
+import com.velir.aem.akamai.ccu.PurgeAction
+import com.velir.aem.akamai.ccu.PurgeDomain
+import com.velir.aem.akamai.ccu.PurgeType
+import com.velir.aem.akamai.ccu.impl.CcuManagerImpl
 import org.osgi.service.component.ComponentContext
 import spock.lang.Specification
 
@@ -36,6 +40,15 @@ class CcuManagerImplTest extends Specification {
 		response.progressUri == "/ccu/v2/purges/95b5a092-043f-4af0-843f-aaf0043faaf0"
 		response.pingAfterSeconds == 420
 		response.supportId == "17PY1321286429616716-211907680"
+	}
+
+	def "PurgeByUrl without url"(){
+		when:
+		def response = ccuManager.purgeByUrl(null)
+
+		then:
+		response.httpStatus == -1
+		response.detail == "Nothing has been sent because the query was not valid"
 	}
 
 	def "PurgeByUrls"() {

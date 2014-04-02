@@ -1,9 +1,16 @@
-package com.velir.aem.akamai.ccu
+package com.velir.aem.akamai.ccu.impl
 
 import java.security.InvalidParameterException
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
+import com.velir.aem.akamai.ccu.CcuManager
+import com.velir.aem.akamai.ccu.PurgeAction
+import com.velir.aem.akamai.ccu.PurgeDomain
+import com.velir.aem.akamai.ccu.PurgeResponse
+import com.velir.aem.akamai.ccu.PurgeStatus
+import com.velir.aem.akamai.ccu.PurgeType
+import com.velir.aem.akamai.ccu.QueueStatus
 import groovyx.net.http.AsyncHTTPBuilder
 import org.apache.felix.scr.annotations.Activate
 import org.apache.felix.scr.annotations.Component
@@ -42,26 +49,41 @@ class CcuManagerImpl implements CcuManager {
 
 	private AsyncHTTPBuilder httpBuilder;
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PurgeResponse purgeByUrl(String url) {
 		purgeByUrls([url]);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PurgeResponse purgeByUrls(Collection<String> urls) {
 		return purge(urls, PurgeType.ARL, defaultPurgeAction, defaultPurgeDomain);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PurgeResponse purgeByCpCode(String cpCode) {
 		return purgeByCpCodes([cpCode]);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public PurgeResponse purgeByCpCodes(Collection<String> cpCode) {
-		return purge(cpCode, PurgeType.CPCODE, defaultPurgeAction, defaultPurgeDomain);
+	public PurgeResponse purgeByCpCodes(Collection<String> cpCodes) {
+		return purge(cpCodes, PurgeType.CPCODE, defaultPurgeAction, defaultPurgeDomain);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PurgeResponse purge(Collection<String> objets, PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain) {
 		LinkedHashSet<String> uniqueObjects = removeDuplicate(objets)
@@ -83,10 +105,19 @@ class CcuManagerImpl implements CcuManager {
 		return result.get();
 	}
 
-	private LinkedHashSet<String> removeDuplicate(Collection<String> urls) {
-		return new LinkedHashSet(urls)
+	/**
+	 * Remove null and duplicates but keep given ordering
+	 * @param objects the list of objects
+	 * @return a ordered set of objects
+	 */
+	private LinkedHashSet<String> removeDuplicate(Collection<String> objects) {
+		objects.removeAll([null])
+		return new LinkedHashSet(objects)
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PurgeStatus getPurgeStatus(String progressUri) {
 		if (!progressUri) {
@@ -96,11 +127,14 @@ class CcuManagerImpl implements CcuManager {
 		Future result = httpBuilder.get(
 			path: progressUri,
 			requestContentType: CONTENT_TYPE
-		) { resp, json -> return new PurgeStatus(json)}
+		) { resp, json -> return new PurgeStatus(json) }
 
 		return result.get();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public QueueStatus getQueueStatus() {
 		Future result = httpBuilder.get(

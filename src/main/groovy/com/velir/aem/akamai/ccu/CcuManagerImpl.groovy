@@ -1,12 +1,19 @@
 package com.velir.aem.akamai.ccu
 
-import groovyx.net.http.AsyncHTTPBuilder
-import org.apache.felix.scr.annotations.*
-import org.osgi.service.component.ComponentContext
-
 import java.security.InvalidParameterException
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
+
+import groovyx.net.http.AsyncHTTPBuilder
+import org.apache.felix.scr.annotations.Activate
+import org.apache.felix.scr.annotations.Component
+import org.apache.felix.scr.annotations.ConfigurationPolicy
+import org.apache.felix.scr.annotations.Deactivate
+import org.apache.felix.scr.annotations.Property
+import org.apache.felix.scr.annotations.Service
+import org.osgi.service.component.ComponentContext
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * CcuManagerImpl -
@@ -16,20 +23,21 @@ import java.util.concurrent.TimeUnit
 @Component(immediate = false, policy = ConfigurationPolicy.REQUIRE)
 @Service(value = [CcuManager.class])
 class CcuManagerImpl implements CcuManager {
+	private static final Logger LOG = LoggerFactory.getLogger(CcuManagerImpl.class)
 	private static final String DEFAULT_CCU_URL = "https://api.ccu.akamai.com"
 	public static final PurgeAction DEFAULT_PURGE_ACTION = PurgeAction.REMOVE
 	public static final PurgeDomain DEFAULT_PURGE_DOMAIN = PurgeDomain.PRODUCTION
 	public static final String CONTENT_TYPE = "application/json"
 
-	@Property(name="rootCcuUrl", label = "Akamai CCU API URL", value = "https://api.ccu.akamai.com")
+	@Property(name = "rootCcuUrl", label = "Akamai CCU API URL", value = "https://api.ccu.akamai.com")
 	private String rootCcuUrl;
 	@Property(name = "userName", label = "Username")
 	private String userName;
-	@Property(name="password", label = "Password")
+	@Property(name = "password", label = "Password")
 	private String password;
-	@Property(name="defaultPurgeAction", label = "Default purge action", description = "Can be invalidate, remove (default)", value = "remove")
+	@Property(name = "defaultPurgeAction", label = "Default purge action", description = "Can be invalidate, remove (default)", value = "remove")
 	private PurgeAction defaultPurgeAction;
-	@Property(name="defaultPurgeDomain", label = "Default purge domain", description = "Can be staging, production (default)", value = "production")
+	@Property(name = "defaultPurgeDomain", label = "Default purge domain", description = "Can be staging, production (default)", value = "production")
 	private PurgeDomain defaultPurgeDomain;
 
 	private AsyncHTTPBuilder httpBuilder;
@@ -57,17 +65,18 @@ class CcuManagerImpl implements CcuManager {
 	@Override
 	public PurgeResponse purge(Collection<String> objets, PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain) {
 		LinkedHashSet<String> uniqueObjects = removeDuplicate(objets)
-		if (uniqueObjects.isEmpty()) {
-			return null; //TO IMPROVE
+		if (!uniqueObjects) {
+			LOG.warn("No objects to invalidate")
+			return PurgeResponse.noResponse();
 		}
 
 		Future result = httpBuilder.post(
 			path: "/ccu/v2/queues/default",
 			requestContentType: CONTENT_TYPE,
 			body: [
-				type: purgeType.name().toLowerCase(),
-				action: purgeAction.name().toLowerCase(),
-				domain: purgeDomain.name().toLowerCase(),
+				type   : purgeType.name().toLowerCase(),
+				action : purgeAction.name().toLowerCase(),
+				domain : purgeDomain.name().toLowerCase(),
 				objects: uniqueObjects,
 			]) { resp, json -> return new PurgeResponse(json) }
 
@@ -80,11 +89,14 @@ class CcuManagerImpl implements CcuManager {
 
 	@Override
 	public PurgeStatus getPurgeStatus(String progressUri) {
+		if (!progressUri) {
+			return PurgeStatus.noStatus();
+		}
+
 		Future result = httpBuilder.get(
 			path: progressUri,
 			requestContentType: CONTENT_TYPE
-		)
-			{ resp, json -> return new PurgeStatus(json) }
+		) { resp, json -> return new PurgeStatus(json)}
 
 		return result.get();
 	}

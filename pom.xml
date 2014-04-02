@@ -155,6 +155,15 @@
 			<!--<scope>test</scope>-->
 		<!--</dependency>-->
 
+		<dependency>
+			<groupId>com.github.tomakehurst</groupId>
+			<artifactId>wiremock</artifactId>
+			<version>1.45</version>
+			<!-- Include this if you have dependency conflicts for Guava, Jetty, Jackson or Apache HTTP Client -->
+			<!--<classifier>standalone</classifier>-->
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>

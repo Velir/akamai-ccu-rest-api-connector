@@ -1,0 +1,14 @@
+{
+    "request": {
+        "method": "GET",
+        "url": "/ccu/v2/queues/default"
+    },
+    "response": {
+        "status": 200,
+        "headers": {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache"
+        },
+        "body": "{\"supportId\": \"17QY1396454277968590-306197600\", \"httpStatus\": 200, \"detail\": \"The queue may take a minute to reflect new or removed requests.\", \"queueLength\": 0}"
+    }
+}

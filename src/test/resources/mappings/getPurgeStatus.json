@@ -1,0 +1,14 @@
+{
+    "request": {
+        "method": "GET",
+        "url": "/ccu/v2/purges/142eac1d-99ab-11e3-945a-7784545a7784"
+    },
+    "response": {
+        "status": 200,
+        "headers": {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache"
+        },
+        "body": "{\"originalEstimatedSeconds\": 480,\"progressUri\": \"/ccu/v2/purges/142eac1d-99ab-11e3-945a-7784545a7784\",\"originalQueueLength\": 6,\"purgeId\": \"142eac1d-99ab-11e3-945a-7784545a7784\",\"supportId\": \"17SY1392844709041263-238396512\",\"httpStatus\": 200,\"completionTime\": 10,\"submittedBy\": \"test1\",\"purgeStatus\": \"In-Progress\",\"submissionTime\": \"2014-02-19T21:16:20Z\",\"pingAfterSeconds\": 60}"
+    }
+}

@@ -68,6 +68,29 @@
 	</properties>
 
 	<dependencies>
+		<!-- Adobe -->
+		<dependency>
+			<groupId>com.adobe.granite</groupId>
+			<artifactId>com.adobe.granite.replication.core</artifactId>
+			<version>5.12.2</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Sling -->
+		<dependency>
+			<groupId>org.apache.sling</groupId>
+			<artifactId>org.apache.sling.api</artifactId>
+			<version>2.4.3-R1488084</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.sling</groupId>
+			<artifactId>org.apache.sling.event</artifactId>
+			<version>3.1.5-R1485539</version>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- Felix/OSGI -->
 		<dependency>
 			<groupId>org.apache.felix</groupId>
@@ -109,6 +132,7 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
 			<version>${slf4j.version}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -137,6 +161,28 @@
 			<groupId>org.codehaus.groovy.modules.http-builder</groupId>
 			<artifactId>http-builder</artifactId>
 			<version>0.7</version>
+		</dependency>
+
+		<dependency>
+			<!-- Only needed for JSON parsing by http-builder-->
+			<groupId>net.sf.json-lib</groupId>
+			<artifactId>json-lib</artifactId>
+			<version>2.3</version>
+			<classifier>jdk15</classifier>
+			<exclusions>
+				<exclusion>
+					<groupId>org.jruby</groupId>
+					<artifactId>jruby</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xmlunit</groupId>
+					<artifactId>xmlunit</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xom</groupId>
+					<artifactId>xom</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Test/Mock -->
@@ -177,6 +223,18 @@
 						<Bundle-Activator>com.velir.aem.akamai.ccu.Activator</Bundle-Activator>
 						<Export-Package>com.velir.aem.akamai.ccu.*; version="${project.version}"</Export-Package>
 						<Private-Package>com.velir.aem.akamai.ccu.impl.*</Private-Package>
+						<Import-Package>
+							!com.google.appengine.*,
+							!net.sf.ezmorph.*,
+							!junit.framework,
+							!nu.xom.*,
+							!oauth.signpost.*,
+							!org.apache.commons.beanutils.*,
+							!org.apache.oro.text.regex.*,
+							!org.apache.xml.resolver.*,
+							!org.cyberneko.html.parsers.*,
+							*
+						</Import-Package>
 						<Embed-Dependency>*;scope=compile|runtime;inline=false</Embed-Dependency>
 					</instructions>
 				</configuration>

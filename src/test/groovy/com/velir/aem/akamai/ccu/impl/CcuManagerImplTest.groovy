@@ -4,7 +4,6 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.velir.aem.akamai.ccu.PurgeAction
 import com.velir.aem.akamai.ccu.PurgeDomain
 import com.velir.aem.akamai.ccu.PurgeType
-import com.velir.aem.akamai.ccu.impl.CcuManagerImpl
 import org.osgi.service.component.ComponentContext
 import spock.lang.Specification
 

@@ -17,4 +17,8 @@ class PurgeResponse {
 	public static PurgeResponse noResponse(){
 		return new PurgeResponse(httpStatus: -1, detail: "Nothing has been sent because the query was not valid")
 	}
+
+	boolean isSuccess(){
+		return httpStatus == 201
+	}
 }

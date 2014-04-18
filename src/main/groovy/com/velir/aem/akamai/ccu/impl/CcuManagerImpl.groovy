@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory
  *
  * @author Sebastien Bernard
  */
-@Component(immediate = false, policy = ConfigurationPolicy.REQUIRE)
+@Component(label = "Akamai CCU REST API Manager", description = "Manage calls to the Akamai CCU REST API", metatype = true, immediate = true, policy = ConfigurationPolicy.REQUIRE)
 @Service(value = [CcuManager.class])
 class CcuManagerImpl implements CcuManager {
 	private static final Logger LOG = LoggerFactory.getLogger(CcuManagerImpl.class)
@@ -92,6 +92,8 @@ class CcuManagerImpl implements CcuManager {
 			return PurgeResponse.noResponse();
 		}
 
+		logDebug(purgeType, purgeAction, purgeDomain, uniqueObjects)
+
 		Future result = httpBuilder.post(
 			path: "/ccu/v2/queues/default",
 			requestContentType: CONTENT_TYPE,
@@ -103,6 +105,15 @@ class CcuManagerImpl implements CcuManager {
 			]) { resp, json -> return new PurgeResponse(json) }
 
 		return result.get();
+	}
+
+	private void logDebug(PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain, LinkedHashSet<String> uniqueObjects) {
+		if(LOG.isDebugEnabled()){
+			LOG.debug("Type: {}", purgeType)
+			LOG.debug("Action: {}", purgeAction)
+			LOG.debug("Domain: {}", purgeDomain)
+			LOG.debug("objects: {}", uniqueObjects)
+		}
 	}
 
 	/**

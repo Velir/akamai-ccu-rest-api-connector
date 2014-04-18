@@ -5,9 +5,10 @@ import com.velir.aem.akamai.ccu.PurgeResponse
 import org.apache.felix.scr.annotations.Component
 import org.apache.felix.scr.annotations.Property
 import org.apache.felix.scr.annotations.Service
-import org.apache.sling.api.SlingConstants
+import org.apache.sling.commons.osgi.PropertiesUtil
 import org.apache.sling.event.jobs.Job
 import org.apache.sling.event.jobs.consumer.JobConsumer
+import org.osgi.service.component.ComponentContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -16,35 +17,59 @@ import org.slf4j.LoggerFactory
  *
  * @author Sebastien Bernard
  */
-@Component
-@Service(value = [FlushAkamaiItemsJob, JobConsumer.class])
-@Property(name = JobConsumer.PROPERTY_TOPICS, value = FlushAkamaiItemsJob.JOB_TOPIC)
+@Component(label = "Akamai Flush Job", description = "Job that execute Akamai flush using Akamai CCU manager", metatype = true, immediate = true)
+@Service(value = [FlushAkamaiItemsJob.class, JobConsumer.class])
+@org.apache.felix.scr.annotations.Properties(value = [
+	@Property(name = JobConsumer.PROPERTY_TOPICS, value = FlushAkamaiItemsJob.JOB_TOPIC),
+	@Property(name = "rootUrl", value = "", label = "Root url", description = "Scheme and domain to append at the beginning of the paths like http://www.velir.com")
+])
 class FlushAkamaiItemsJob implements JobConsumer {
-	public static final String JOB_TOPIC = "com/velir/aem/akamai/ccu/impl/"
 	private static final Logger LOG = LoggerFactory.getLogger(FlushAkamaiItemsJob.class)
+	public static final String JOB_TOPIC = "com/velir/aem/akamai/ccu/impl/FlushAkamaiItemsJob"
+	public static final String PATHS = "paths"
 
 	@org.apache.felix.scr.annotations.Reference
 	private CcuManager ccuManager
 
+	private String rootUrl;
+
 	@Override
-	JobConsumer.JobResult process(Job job) {
+	public JobConsumer.JobResult process(Job job) {
 		Set<String> pathsToPurge = getPathsToPurge(job)
+		LOG.debug("Start processing job to purge Akamai cache")
 		if (pathsToPurge.isEmpty()) {
-			LOG.warn("No path to process for FlushAkamaiItemsJob, canceling...")
+			LOG.warn("No path to process, canceling...")
 			return JobConsumer.JobResult.CANCEL
 		}
 
-		LOG.debug("Starting process to purge Akamai caching {}.", pathsToPurge)
+		LOG.debug("Path(s) to purge: {}", pathsToPurge)
 
-		PurgeResponse response = ccuManager.purgeByUrls(pathsToPurge)
+		Set<String> absoluteUrls = prependPathWithRootUrl(pathsToPurge);
+
+		PurgeResponse response = ccuManager.purgeByUrls(absoluteUrls)
 
 		return convertToJobResult(response);
 	}
 
+	private Set<String> prependPathWithRootUrl(Collection<String> paths) {
+		if (!rootUrl) {
+			return paths;
+		}
+
+		Set<String> urls = new HashSet<>(paths.size())
+		for(path in paths) {
+			if (!path.startsWith(rootUrl)) {
+				urls.add(rootUrl + path)
+			}
+		}
+
+		return urls
+	}
+
 	private static Set getPathsToPurge(Job job) {
-		String pathsToInvalidate = job.getProperty(SlingConstants.PROPERTY_PATH)
+		String pathsToInvalidate = job.getProperty(PATHS)
 		if (pathsToInvalidate == null) {
-			LOG.error("The property {} is mandatory to execute the job", SlingConstants.PROPERTY_PATH)
+			LOG.error("The property {} is mandatory to execute the job", PATHS)
 			return Collections.emptySet()
 		}
 		Set results = new HashSet()
@@ -54,5 +79,9 @@ class FlushAkamaiItemsJob implements JobConsumer {
 
 	static JobConsumer.JobResult convertToJobResult(PurgeResponse response) {
 		return response.isSuccess() ? JobConsumer.JobResult.OK : JobConsumer.JobResult.FAILED;
+	}
+
+	public void activate(ComponentContext context) {
+		rootUrl = PropertiesUtil.toString(context.getProperties().get("rootUrl"), "")
 	}
 }

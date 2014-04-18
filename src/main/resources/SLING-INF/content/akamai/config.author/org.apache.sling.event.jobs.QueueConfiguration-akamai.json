@@ -1,0 +1,11 @@
+{
+    "jcr:primaryType": "sling:OsgiConfig",
+    "queue.name": "Akamai Job Queue",
+    "queue.type": "ORDERED",
+    "queue.topics": "com/velir/aem/akamai/ccu/impl/FlushAkamaiItemsJob",
+    "queue.maxparallel": 5,
+    "queue.retries": 3,
+    "queue.retrydelay": 120000,
+    "queue.priority": "NORM",
+    "service.ranking": 0
+}

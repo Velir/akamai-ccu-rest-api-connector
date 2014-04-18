@@ -1,11 +1,13 @@
 package com.velir.aem.akamai.ccu.impl
 
+import com.day.cq.replication.ReplicationAction
 import org.apache.felix.scr.annotations.Component
 import org.apache.felix.scr.annotations.Property
 import org.apache.felix.scr.annotations.Service
-import org.apache.sling.api.SlingConstants
+import org.apache.sling.commons.osgi.PropertiesUtil
 import org.apache.sling.event.EventUtil
 import org.apache.sling.event.jobs.JobManager
+import org.osgi.service.component.ComponentContext
 import org.osgi.service.event.Event
 import org.osgi.service.event.EventConstants
 import org.osgi.service.event.EventHandler
@@ -18,59 +20,65 @@ import org.slf4j.LoggerFactory
  * @author Sebastien Bernard
  */
 @Service(value = [AkamaiEventHandler.class, EventHandler.class])
-@Component(label = "Akamai event handler", description = "Listen to repository replication notification to invalidate Akamai cache when it is needed", metatype = true)
-@Property(name = EventConstants.EVENT_TOPIC, value = [SlingConstants.TOPIC_RESOURCE_ADDED, SlingConstants.TOPIC_RESOURCE_CHANGED, SlingConstants.TOPIC_RESOURCE_REMOVED])
+@Component(label = "Akamai Event Handler", description = "Listen to repository replication notification to invalidate Akamai cache when it is needed", metatype = true, immediate = true)
+@org.apache.felix.scr.annotations.Properties(value = [
+	@Property(name = EventConstants.EVENT_TOPIC, value = ReplicationAction.EVENT_TOPIC, label = "Event topic"),
+	@Property(name = "pathsHandled", value = ["/content/dam"], label = "Handled paths")
+])
 class AkamaiEventHandler implements EventHandler {
 	private final static Logger LOG = LoggerFactory.getLogger(AkamaiEventHandler.class)
-	public static final String JOB_NAME = null; // No default job name set
+	public static final String JOB_NAME = null // No default job name set
+
 
 	@org.apache.felix.scr.annotations.Reference
 	private JobManager jobManager;
 
-	@org.apache.felix.scr.annotations.Property(name = "validPaths", value = ["/content/dam"])
-	private Set<String> validPaths;
-
-	@SuppressWarnings("GroovyUnusedDeclaration")
-	void setValidPaths(String[] validPaths) {
-		this.validPaths = validPaths
-	}
+	private Set<String> pathsHandled;
 
 	@Override
 	public void handleEvent(Event event) {
 		if (EventUtil.isLocal(event)) {
-			LOG.debug("Start adding Akamai job")
-			def path = event.getProperty(SlingConstants.PROPERTY_PATH)
+			LOG.debug("Start handling event to add Akamai job")
+			String[] paths = PropertiesUtil.toStringArray(event.getProperty(FlushAkamaiItemsJob.PATHS))
+			Set<String> validPaths = filterValidPath(paths);
 
-			if (valid(path)) {
-				jobManager.addJob(FlushAkamaiItemsJob.JOB_TOPIC, JOB_NAME, buildJobProperties(path));
+			if (!validPaths.isEmpty()) {
+				jobManager.addJob(FlushAkamaiItemsJob.JOB_TOPIC, JOB_NAME, buildJobProperties(validPaths));
+				LOG.debug("Akamai job Added")
 			} else {
-				LOG.debug("{} is not a valid path to purge", path)
+				LOG.debug("{} has no valid path(s) to purge. No Job added", paths)
 			}
-			LOG.debug("Akamai job Added")
 		}
 	}
 
-	boolean valid(String path) {
-		if (!path) {
-			return false
-		}
-
-		if (!validPaths) {
-			return true
-		}
-
-		for (String validPath : validPaths) {
-			if (path.startsWith(validPath)) {
-				return true
+	private Set<String> filterValidPath(String[] paths) {
+		Set<String> validPaths = new HashSet<>();
+		for (String path : paths) {
+			if (path) {
+				for (String validPath : pathsHandled) {
+					if (path.startsWith(validPath)) {
+						validPaths.add(path)
+					}
+				}
 			}
 		}
-		return false
+		return validPaths
 	}
 
-	private static Map<String, Object> buildJobProperties(String path) {
+	private static Map<String, Object> buildJobProperties(Set<String> paths) {
 		Map<String, Object> jobProperties = new HashMap();
-		jobProperties.put(FlushAkamaiItemsJob.PATH_PROPERTY_NAME, path);
+		jobProperties.put(FlushAkamaiItemsJob.PATHS, paths);
 		return jobProperties;
 	}
 
+	@SuppressWarnings("GroovyUnusedDeclaration")
+	protected void activate(ComponentContext context) {
+		pathsHandled = new HashSet<String>()
+		pathsHandled.addAll(PropertiesUtil.toStringArray(context.getProperties().get("pathsHandled")));
+	}
+
+	@SuppressWarnings("GroovyUnusedDeclaration")
+	protected void deactivate() {
+		pathsHandled = Collections.emptySet();
+	}
 }

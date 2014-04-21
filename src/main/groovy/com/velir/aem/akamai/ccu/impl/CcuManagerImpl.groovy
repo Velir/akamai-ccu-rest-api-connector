@@ -104,7 +104,10 @@ class CcuManagerImpl implements CcuManager {
 				objects: uniqueObjects,
 			]) { resp, json -> return new PurgeResponse(json) }
 
-		return result.get();
+
+		def response = result.get()
+		LOG.debug("Response {}", response);
+		return response;
 	}
 
 	private void logDebug(PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain, LinkedHashSet<String> uniqueObjects) {

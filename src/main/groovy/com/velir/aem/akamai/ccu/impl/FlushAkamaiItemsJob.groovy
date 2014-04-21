@@ -42,13 +42,21 @@ class FlushAkamaiItemsJob implements JobConsumer {
 			return JobConsumer.JobResult.CANCEL
 		}
 
-		LOG.debug("Path(s) to purge: {}", pathsToPurge)
-
 		Set<String> absoluteUrls = prependPathWithRootUrl(pathsToPurge);
+		logUrls(absoluteUrls)
 
 		PurgeResponse response = ccuManager.purgeByUrls(absoluteUrls)
 
 		return convertToJobResult(response);
+	}
+
+	private logUrls(Set<String> pathsToPurge) {
+		if (LOG.isInfoEnabled()) {
+			LOG.info("Path(s) to purge:")
+			for (path in pathsToPurge) {
+				LOG.info(path)
+			}
+		}
 	}
 
 	private Set<String> prependPathWithRootUrl(Collection<String> paths) {
@@ -56,10 +64,10 @@ class FlushAkamaiItemsJob implements JobConsumer {
 			return paths;
 		}
 
-		Set<String> urls = new HashSet<>(paths.size())
-		for(path in paths) {
+		Set<String> urls = new HashSet<String>(paths.size())
+		for (path in paths) {
 			if (!path.startsWith(rootSiteUrl)) {
-				urls.add(rootSiteUrl + path)
+				urls.add(rootSiteUrl.concat(path))
 			}
 		}
 
@@ -67,13 +75,13 @@ class FlushAkamaiItemsJob implements JobConsumer {
 	}
 
 	private static Set getPathsToPurge(Job job) {
-		String pathsToInvalidate = job.getProperty(PATHS)
+		String[] pathsToInvalidate = PropertiesUtil.toStringArray(job.getProperty(PATHS));
 		if (pathsToInvalidate == null) {
 			LOG.error("The property {} is mandatory to execute the job", PATHS)
 			return Collections.emptySet()
 		}
 		Set results = new HashSet()
-		results.add(pathsToInvalidate)
+		results.addAll(pathsToInvalidate)
 		return results;
 	}
 

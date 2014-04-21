@@ -2,5 +2,5 @@
     "jcr:primaryType": "sling:OsgiConfig",
     "org.apache.sling.commons.log.names":"com.velir.aem.akamai.ccu",
     "org.apache.sling.commons.log.file":"logs/akamai.log",
-    "org.apache.sling.commons.log.level":"debug"
+    "org.apache.sling.commons.log.level":"info"
 }

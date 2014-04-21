@@ -109,6 +109,7 @@ class CcuManagerImpl implements CcuManager {
 
 	private void logDebug(PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain, LinkedHashSet<String> uniqueObjects) {
 		if(LOG.isDebugEnabled()){
+			LOG.debug("Request:")
 			LOG.debug("Type: {}", purgeType)
 			LOG.debug("Action: {}", purgeAction)
 			LOG.debug("Domain: {}", purgeDomain)

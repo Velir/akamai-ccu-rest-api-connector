@@ -164,6 +164,13 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.2.1</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
 			<!-- Only needed for JSON parsing -->
 			<groupId>net.sf.json-lib</groupId>
 			<artifactId>json-lib</artifactId>
@@ -186,6 +193,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>net.sourceforge.nekohtml</groupId>
+			<artifactId>nekohtml</artifactId>
+			<version>1.9.16</version>
+		</dependency>
+
+		<dependency>
 			<groupId>xml-resolver</groupId>
 			<artifactId>xml-resolver</artifactId>
 			<version>1.2</version>
@@ -195,6 +208,32 @@
 			<groupId>xerces</groupId>
 			<artifactId>xercesImpl</artifactId>
 			<version>2.6.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+			<version>1.8.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+			<version>3.2.1</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.4</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sf.ezmorph</groupId>
+			<artifactId>ezmorph</artifactId>
+			<version>1.0.6</version>
 		</dependency>
 
 		<!-- Test/Mock -->
@@ -237,11 +276,9 @@
 						<Private-Package>com.velir.aem.akamai.ccu.impl</Private-Package>
 						<Import-Package>
 							!com.google.appengine.*,
-							!net.sf.ezmorph.*,
 							!junit.framework,
 							!nu.xom.*,
 							!oauth.signpost.*,
-							!org.apache.commons.beanutils.*,
 							!org.apache.oro.text.regex.*,
 							!org.cyberneko.html.parsers.*,
 							!sun.io,

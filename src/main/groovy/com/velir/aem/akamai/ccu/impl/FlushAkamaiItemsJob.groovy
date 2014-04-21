@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory
 @Service(value = [FlushAkamaiItemsJob.class, JobConsumer.class])
 @org.apache.felix.scr.annotations.Properties(value = [
 	@Property(name = JobConsumer.PROPERTY_TOPICS, value = FlushAkamaiItemsJob.JOB_TOPIC),
-	@Property(name = "rootUrl", value = "", label = "Root url", description = "Scheme and domain to append at the beginning of the paths like http://www.velir.com")
+	@Property(name = "rootSiteUrl", value = "", label = "Root site url", description = "Scheme and domain to append at the beginning of the paths like http://www.velir.com")
 ])
 class FlushAkamaiItemsJob implements JobConsumer {
 	private static final Logger LOG = LoggerFactory.getLogger(FlushAkamaiItemsJob.class)
@@ -31,7 +31,7 @@ class FlushAkamaiItemsJob implements JobConsumer {
 	@org.apache.felix.scr.annotations.Reference
 	private CcuManager ccuManager
 
-	private String rootUrl;
+	private String rootSiteUrl;
 
 	@Override
 	public JobConsumer.JobResult process(Job job) {
@@ -52,14 +52,14 @@ class FlushAkamaiItemsJob implements JobConsumer {
 	}
 
 	private Set<String> prependPathWithRootUrl(Collection<String> paths) {
-		if (!rootUrl) {
+		if (!rootSiteUrl) {
 			return paths;
 		}
 
 		Set<String> urls = new HashSet<>(paths.size())
 		for(path in paths) {
-			if (!path.startsWith(rootUrl)) {
-				urls.add(rootUrl + path)
+			if (!path.startsWith(rootSiteUrl)) {
+				urls.add(rootSiteUrl + path)
 			}
 		}
 
@@ -82,6 +82,6 @@ class FlushAkamaiItemsJob implements JobConsumer {
 	}
 
 	public void activate(ComponentContext context) {
-		rootUrl = PropertiesUtil.toString(context.getProperties().get("rootUrl"), "")
+		rootSiteUrl = PropertiesUtil.toString(context.getProperties().get("rootSiteUrl"), "")
 	}
 }

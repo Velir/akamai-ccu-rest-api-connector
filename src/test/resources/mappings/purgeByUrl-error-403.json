@@ -1,0 +1,19 @@
+{
+    "request": {
+        "method": "POST",
+        "url": "/ccu/v2/queues/default",
+        "bodyPatterns": [
+            {
+                "equalToJson": "{\"objects\": [\"http://error-403\"]}",
+                "jsonCompareMode": "LENIENT"
+            }
+        ]
+    },
+    "response": {
+        "status": 403,
+        "headers": {
+            "Content-Type": "application/api-problem+json"
+        },
+        "body": "{\"supportId\": \"17PY1366767251622255-198714464\", \"title\": \"unauthorized cpcode\", \"httpStatus\": 403, \"detail\": \"999\", \"describedBy\": \"https://api.ccu.akamai.com/ccu/v2/errors/unauthorized-cpcode\"}"
+    }
+}

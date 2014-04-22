@@ -1,5 +1,4 @@
 package com.velir.aem.akamai.ccu.impl
-
 import java.security.InvalidParameterException
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
@@ -12,6 +11,7 @@ import com.velir.aem.akamai.ccu.PurgeStatus
 import com.velir.aem.akamai.ccu.PurgeType
 import com.velir.aem.akamai.ccu.QueueStatus
 import groovyx.net.http.AsyncHTTPBuilder
+import groovyx.net.http.HttpResponseException
 import org.apache.felix.scr.annotations.Activate
 import org.apache.felix.scr.annotations.Component
 import org.apache.felix.scr.annotations.ConfigurationPolicy
@@ -21,7 +21,6 @@ import org.apache.felix.scr.annotations.Service
 import org.osgi.service.component.ComponentContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-
 /**
  * CcuManagerImpl -
  *
@@ -175,6 +174,10 @@ class CcuManagerImpl implements CcuManager {
 		)
 		httpBuilder.setContentEncoding("utf-8")
 		httpBuilder.auth.basic userName, password
+		httpBuilder.handler.failure = { resp, json ->
+			LOG.error("Error response : ${json}" )
+			throw new HttpResponseException(resp)
+		}
 	}
 
 	@Deactivate

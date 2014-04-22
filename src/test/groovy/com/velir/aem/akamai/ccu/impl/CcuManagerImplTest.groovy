@@ -1,5 +1,7 @@
 package com.velir.aem.akamai.ccu.impl
 
+import java.util.concurrent.ExecutionException
+
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.velir.aem.akamai.ccu.PurgeAction
 import com.velir.aem.akamai.ccu.PurgeDomain
@@ -8,7 +10,6 @@ import org.osgi.service.component.ComponentContext
 import spock.lang.Specification
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
-
 /**
  * CcuManagerImplTest -
  *
@@ -133,6 +134,14 @@ class CcuManagerImplTest extends Specification {
 		status.detail == "The queue may take a minute to reflect new or removed requests."
 		status.queueLength == 0
 		status.supportId == "17QY1396454277968590-306197600"
+	}
+
+	def "Purge with error code 403"(){
+		when:
+		ccuManager.purgeByUrls(["http://error-403"])
+
+		then:
+		thrown(ExecutionException)
 	}
 
 	def cleanupSpec() {

@@ -1,7 +1,10 @@
 {
     "request": {
         "method": "POST",
-        "url": "/ccu/v2/queues/default"
+        "url": "/ccu/v2/queues/default",
+        "bodyPatterns": [
+            { "doesNotMatch": ".*error.*" }
+        ]
     },
     "response": {
         "status": 200,

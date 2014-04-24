@@ -87,7 +87,7 @@
 		<dependency>
 			<groupId>org.apache.sling</groupId>
 			<artifactId>org.apache.sling.event</artifactId>
-			<version>3.3.0</version>
+			<version>3.3.4</version>
 			<scope>provided</scope>
 		</dependency>
 

@@ -27,8 +27,6 @@ import org.slf4j.LoggerFactory
 ])
 class AkamaiEventHandler implements EventHandler {
 	private final static Logger LOG = LoggerFactory.getLogger(AkamaiEventHandler.class)
-	public static final String JOB_NAME = null // No default job name set
-
 
 	@org.apache.felix.scr.annotations.Reference
 	private JobManager jobManager;
@@ -43,7 +41,7 @@ class AkamaiEventHandler implements EventHandler {
 			Set<String> validPaths = filterValidPath(paths);
 
 			if (!validPaths.isEmpty()) {
-				jobManager.addJob(FlushAkamaiItemsJob.JOB_TOPIC, JOB_NAME, buildJobProperties(validPaths));
+				jobManager.addJob(FlushAkamaiItemsJob.JOB_TOPIC, buildJobProperties(validPaths));
 				LOG.debug("Akamai job Added")
 			} else {
 				LOG.debug("{} has no valid path(s) to purge. No Job added", paths)

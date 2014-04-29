@@ -84,8 +84,8 @@ class CcuManagerImpl implements CcuManager {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PurgeResponse purge(Collection<String> objets, PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain) {
-		LinkedHashSet<String> uniqueObjects = removeDuplicate(objets)
+	public PurgeResponse purge(Collection<String> objects, PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain) {
+		Collection<String> uniqueObjects = removeDuplicate(objects)
 		if (!uniqueObjects) {
 			LOG.warn("No objects to invalidate")
 			return PurgeResponse.noResponse();
@@ -109,7 +109,7 @@ class CcuManagerImpl implements CcuManager {
 		return response;
 	}
 
-	private void logDebug(PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain, LinkedHashSet<String> uniqueObjects) {
+	private void logDebug(PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain, Collection<String> uniqueObjects) {
 		if(LOG.isDebugEnabled()){
 			LOG.debug("Request:")
 			LOG.debug("Type: {}", purgeType)
@@ -124,9 +124,9 @@ class CcuManagerImpl implements CcuManager {
 	 * @param objects the list of objects
 	 * @return a ordered set of objects
 	 */
-	private LinkedHashSet<String> removeDuplicate(Collection<String> objects) {
+	private Collection<String> removeDuplicate(Collection<String> objects) {
 		objects.removeAll([null])
-		return new LinkedHashSet(objects)
+		return objects.unique()
 	}
 
 	/**

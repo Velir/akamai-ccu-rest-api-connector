@@ -17,6 +17,7 @@ They are three major classes that manage the invalidation :
 to invalidate cached objects. You can invalidate by CP code or ARL depending of your strategy. This class doesn't do any processing on the urls that you pass to it. It just make
 sure that the list contains only unique values and add them to the invalidate caching request.
 ex:
+
 ```def response = ccuManager.purgeByUrls(["http://www.mysite.com/test", "http://www.mysite.com/test2"])
 def response = ccuManager.purgeByCpCode("CPCODE1")
 def response = ccuManager.purge(["http://www.mysite.com/test", "http://www.mysite.com/test2"], PurgeType.ARL, PurgeAction.REMOVE, PurgeDomain.PRODUCTION)

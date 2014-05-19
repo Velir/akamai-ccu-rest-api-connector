@@ -18,9 +18,9 @@ to invalidate cached objects. You can invalidate by CP code or ARL depending of 
 sure that the list contains only unique values and add them to the invalidate caching request.
 ex:
 
-    def response = ccuManager.purgeByUrls(["http://www.mysite.com/test", "http://www.mysite.com/test2"])
+    `def response = ccuManager.purgeByUrls(["http://www.mysite.com/test", "http://www.mysite.com/test2"])
     def response = ccuManager.purgeByCpCode("CPCODE1")
-    def response = ccuManager.purge(["http://www.mysite.com/test", "http://www.mysite.com/test2"], PurgeType.ARL, PurgeAction.REMOVE, PurgeDomain.PRODUCTION)
+    def response = ccuManager.purge(["http://www.mysite.com/test", "http://www.mysite.com/test2"], PurgeType.ARL, PurgeAction.REMOVE, PurgeDomain.PRODUCTION)`
 
 The minimum configuration needed for that service are your Akamai credentials : "userName" and "password".
 

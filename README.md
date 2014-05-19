@@ -16,9 +16,9 @@ They are three major classes that manage the invalidation :
 - CcuManager is the interface of the connector itself that manage a pool of connections to request the Akamai CCU REST services. It offers simple method's signature with predefined default values
 to invalidate cached objects. You can invalidate by CP code or ARL depending of your strategy. This class doesn't do any processing on the urls that you pass to it. It just make
 sure that the list contains only unique values and add them to the invalidate caching request.
-ex:
 
-```def response = ccuManager.purgeByUrls(["http://www.mysite.com/test", "http://www.mysite.com/test2"])
+```groovy
+def response = ccuManager.purgeByUrls(["http://www.mysite.com/test", "http://www.mysite.com/test2"])
 def response = ccuManager.purgeByCpCode("CPCODE1")
 def response = ccuManager.purge(["http://www.mysite.com/test", "http://www.mysite.com/test2"], PurgeType.ARL, PurgeAction.REMOVE, PurgeDomain.PRODUCTION)
 ```
@@ -40,7 +40,8 @@ Each of these classes can be configured to fit you need and your akamai credenti
 
 - CcuManagerImpl: *com.velir.aem.akamai.ccu.impl.CcuManagerImpl.xml*
 
-```<?xml version="1.0" encoding="UTF-8"?>
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
 <jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"
     jcr:primaryType="sling:OsgiConfig"
     rootCcuUrl="https://api.ccu.akamai.com"
@@ -60,7 +61,8 @@ defaultPurgeDomain : The default domain if not specified.
 
 - AkamaiEventHandler: *com.velir.aem.akamai.ccu.impl.AkamaiEventHandler.xml*
 
-```<?xml version="1.0" encoding="UTF-8"?>
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
 <jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"
     jcr:primaryType="sling:OsgiConfig"
 	pathsHandled="[/content/dam]"/>
@@ -71,7 +73,8 @@ pathsHandled: Comma separated list of paths that can be invalidate.
 
 - FlushAkamaiItemsJob: com.velir.aem.akamai.ccu.impl.FlushAkamaiItemsJob.xml
 
-```<?xml version="1.0" encoding="UTF-8"?>
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
 <jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"
     jcr:primaryType="sling:OsgiConfig"
     rootSiteUrl="http://www.mysite.com"/>

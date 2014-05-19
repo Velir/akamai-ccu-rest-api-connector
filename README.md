@@ -39,7 +39,9 @@ You don't have to use the all thing you could easily just use the CCuManager to 
 Each of these classes can be configured to fit you need and your akamai credential. In your JCR repository under /apps/your_app/config.author/ you can add the following configuration files:
 
 - CcuManagerImpl: *com.velir.aem.akamai.ccu.impl.CcuManagerImpl.xml*
-`<?xml version="1.0" encoding="UTF-8"?>
+
+`
+<?xml version="1.0" encoding="UTF-8"?>
 <jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"
 		  jcr:primaryType="sling:OsgiConfig"
 		  rootCcuUrl="https://api.ccu.akamai.com"
@@ -47,7 +49,8 @@ Each of these classes can be configured to fit you need and your akamai credenti
 		  password="your_password"
 		  defaultPurgeAction="remove"
 		  defaultPurgeDomain="prod"/>
-</code>`
+</code>
+`
 
 defaultPurgeAction : The default purge if not specified.
     - remove: (default) Remove the asset from the edge server and force the next request to the asset to reach the origin.

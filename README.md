@@ -2,7 +2,7 @@
 
 ## Description
 
-This bundle provide a "ready to use" OSGI connector for the new Akamai CCU REST API. This connector has been written in groovy using the http-builder.
+This bundle provide a "ready to use" OSGI connector for the new Akamai CCU REST API. This connector has been written in groovy using the http-builder framework.
 It is design to enable cache invalidation for AEM/CQ CMS when assets get invalidated. It can be easily configured with your own credentials
 and settings. The connector provide all services that you can request via the REST API like getPurgeStatus(), getQueueStatus() and the most important purge().
 
@@ -29,8 +29,8 @@ The minimum configuration needed for that service are your Akamai credentials : 
 if the path to invalidate start by one of the values specified in the list "pathsHandled" (By default it is /content/dam).
 
 - FlushAkamaiItemsJob is the job that listen to the queue "com/velir/aem/akamai/ccu/impl/FlushAkamaiItemsJob" and call the CCuManager.purgeByUrls(...) with the list of path to
-invalidate. These paths are prepended by the rootUrl that represent the scheme + the domaine without / at the end.
-ex: rootSiteUrl = http://www.velir.com and url = /test => The path to invalidate will be http://www.velir.com/test
+invalidate. These paths are prepended by the rootUrl that represent the scheme + the domain without / at the end.
+ex: rootSiteUrl = "http://www.velir.com" and url = "/test" => The path to invalidate will be "http://www.velir.com/test"
 
 You don't have to use the all thing you could easily just use the CCuManager to invalidate your cache without using the listener.
 
@@ -48,8 +48,9 @@ Each of these classes can be configured to fit you need and your akamai credenti
 	userName="your_username"
 	password="your_password"
 	defaultPurgeAction="remove"
-	defaultPurgeDomain="prod"/>
+	defaultPurgeDomain="production"/>
 ```
+userName/password: The credentials that you use to connect to the akamai control website.
 
 defaultPurgeAction : The default purge if not specified.
     - remove: (default) Remove the asset from the edge server and force the next request to the asset to reach the origin.
@@ -67,7 +68,6 @@ defaultPurgeDomain : The default domain if not specified.
     jcr:primaryType="sling:OsgiConfig"
 	pathsHandled="[/content/dam]"/>
 ```
-
 
 pathsHandled: Comma separated list of paths that can be invalidate.
 

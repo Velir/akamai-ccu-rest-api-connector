@@ -18,23 +18,23 @@ import org.slf4j.LoggerFactory
  * @author Sebastien Bernard
  */
 @Component(label = "Akamai Flush Job", description = "Job that execute Akamai flush using Akamai CCU manager", metatype = true, immediate = true)
-@Service(value = [FlushAkamaiItemsJob.class, JobConsumer.class])
+@Service(value = [FlushAkamaiItemsJob, JobConsumer])
 @org.apache.felix.scr.annotations.Properties(value = [
 	@Property(name = JobConsumer.PROPERTY_TOPICS, value = FlushAkamaiItemsJob.JOB_TOPIC),
 	@Property(name = "rootSiteUrl", value = "", label = "Root site url", description = "Scheme and domain to append at the beginning of the paths like http://www.velir.com")
 ])
 class FlushAkamaiItemsJob implements JobConsumer {
-	private static final Logger LOG = LoggerFactory.getLogger(FlushAkamaiItemsJob.class)
+	private static final Logger LOG = LoggerFactory.getLogger(FlushAkamaiItemsJob)
 	public static final String JOB_TOPIC = "com/velir/aem/akamai/ccu/impl/FlushAkamaiItemsJob"
 	public static final String PATHS = "paths"
 
 	@org.apache.felix.scr.annotations.Reference
 	private CcuManager ccuManager
 
-	private String rootSiteUrl;
+	private String rootSiteUrl
 
 	@Override
-	public JobConsumer.JobResult process(Job job) {
+	JobConsumer.JobResult process(Job job) {
 		Set<String> pathsToPurge = getPathsToPurge(job)
 		LOG.debug("Start processing job to purge Akamai cache")
 		if (pathsToPurge.isEmpty()) {
@@ -42,15 +42,15 @@ class FlushAkamaiItemsJob implements JobConsumer {
 			return JobConsumer.JobResult.CANCEL
 		}
 
-		Set<String> absoluteUrls = prependPathWithRootUrl(pathsToPurge);
+		Set<String> absoluteUrls = prependPathWithRootUrl(pathsToPurge)
 		logUrls(absoluteUrls)
 
 		PurgeResponse response = ccuManager.purgeByUrls(absoluteUrls)
 
-		return convertToJobResult(response);
+		convertToJobResult(response)
 	}
 
-	private logUrls(Set<String> pathsToPurge) {
+	private static logUrls(Set<String> pathsToPurge) {
 		if (LOG.isInfoEnabled()) {
 			LOG.info("Path(s) to purge:")
 			for (path in pathsToPurge) {
@@ -61,7 +61,7 @@ class FlushAkamaiItemsJob implements JobConsumer {
 
 	private Set<String> prependPathWithRootUrl(Collection<String> paths) {
 		if (!rootSiteUrl) {
-			return paths;
+			return paths
 		}
 
 		Set<String> urls = new HashSet<String>(paths.size())
@@ -71,22 +71,22 @@ class FlushAkamaiItemsJob implements JobConsumer {
 			}
 		}
 
-		return urls
+		urls
 	}
 
 	private static Set getPathsToPurge(Job job) {
-		String[] pathsToInvalidate = PropertiesUtil.toStringArray(job.getProperty(PATHS));
+		String[] pathsToInvalidate = PropertiesUtil.toStringArray(job.getProperty(PATHS))
 		if (pathsToInvalidate == null) {
 			LOG.error("The property {} is mandatory to execute the job", PATHS)
 			return Collections.emptySet()
 		}
 		Set results = new HashSet()
 		results.addAll(pathsToInvalidate)
-		return results;
+		results
 	}
 
 	static JobConsumer.JobResult convertToJobResult(PurgeResponse response) {
-		return response.isSuccess() ? JobConsumer.JobResult.OK : JobConsumer.JobResult.FAILED;
+		response.isSuccess() ? JobConsumer.JobResult.OK : JobConsumer.JobResult.FAILED
 	}
 
 	public void activate(ComponentContext context) {

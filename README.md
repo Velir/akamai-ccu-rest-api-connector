@@ -2,11 +2,11 @@
 
 ## Description
 
-This bundle provides a "ready to use" OSGI connector for the new Akamai CCU REST API. This connector has been written in groovy using the http-builder framework.
+This bundle provides a "ready to use" OSGI connector for the new Akamai Open CCU V2 REST API. This connector has been written in groovy using the http-builder framework.
 It is designed to enable cache invalidation for AEM/CQ CMS when assets get invalidated. It can be easily configured with your own credentials
 and settings. The connector provides all services that you can request via the REST API like getPurgeStatus(), getQueueStatus(), and the most important purge().
 
-The bundle is made to be as light as possible and can be installed just by itself. You will need groovy-all to be installed along with some others bundles like
+The bundle is made to be as light as possible and can be installed just by itself. You will need groovy-all version 2.4.7 to be installed along with some others bundles like
 httpclient, commons-collections, commons-lang ... but they usually are already there.
 
 ## Implementation
@@ -45,12 +45,13 @@ Each of these classes can be configured to fit you need and your Akamai credenti
 <jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"
     jcr:primaryType="sling:OsgiConfig"
     rootCcuUrl="https://api.ccu.akamai.com"
-	userName="your_username"
-	password="your_password"
+	clientToken="your_clientSecret"
+	clientSecret="your_clientSecret"
+	accessToken="your_accessToken"
 	defaultPurgeAction="remove"
 	defaultPurgeDomain="production"/>
 ```
-userName/password: The credentials that you use to connect to the Akamai control website.
+For more info on credentials see https://developer.akamai.com/introduction/Prov_Creds.html
 
 defaultPurgeAction : The default purge if not specified.
     - remove: (default) Remove the asset from the edge server and force the next request to the asset to reach the origin.
@@ -93,4 +94,4 @@ This project is open source under MIT License.
 
 ## More information
 
-If you want to learn more about the CCU REST API: https://api.ccu.akamai.com/ccu/v2/docs/index.html
+If you want to learn more about the CCU REST API: https://developer.akamai.com/introduction/

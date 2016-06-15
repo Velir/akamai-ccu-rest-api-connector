@@ -12,13 +12,13 @@ class PurgeStatus {
 	String purgeId
 	String supportId
 	int httpStatus
-	long completionTime
+	String completionTime
 	String submittedBy
 	String purgeStatus
 	String submissionTime
 	long pingAfterSeconds
 
-	public static PurgeStatus noStatus(){
-		return new PurgeStatus(httpStatus: -1, purgeStatus: "The request was not sent")
+	static PurgeStatus noStatus(){
+		new PurgeStatus(httpStatus: -1, purgeStatus: "The request was not sent")
 	}
 }

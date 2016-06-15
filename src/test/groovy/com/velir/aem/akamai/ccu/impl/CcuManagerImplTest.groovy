@@ -1,7 +1,5 @@
 package com.velir.aem.akamai.ccu.impl
 
-import java.util.concurrent.ExecutionException
-
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.velir.aem.akamai.ccu.PurgeAction
 import com.velir.aem.akamai.ccu.PurgeDomain
@@ -10,22 +8,23 @@ import org.osgi.service.component.ComponentContext
 import spock.lang.Specification
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import static org.apache.http.HttpStatus.SC_CREATED
 /**
  * CcuManagerImplTest -
  *
  * @author Sebastien Bernard
  */
 class CcuManagerImplTest extends Specification {
-	private static WireMockServer wireMockServer;
-	private static CcuManagerImpl ccuManager = new CcuManagerImpl();
+	private static WireMockServer wireMockServer
+	private static CcuManagerImpl ccuManager = new CcuManagerImpl()
 
 	def setupSpec() {
 		wireMockServer = new WireMockServer(wireMockConfig().port(4444))
 		wireMockServer.start()
 
-		ComponentContext context = Mock(ComponentContext.class)
-		context.getProperties() >> new Hashtable([rootCcuUrl: "http://localhost:4444", userName: "test", password: "test", defaultPurgeDomain: "staging"])
-		ccuManager.activate(context);
+		ComponentContext context = Mock(ComponentContext)
+		context.getProperties() >> new Hashtable([rootCcuUrl: "http://localhost:4444", clientToken: "test", clientSecret: "test", accessToken : 'test', defaultPurgeDomain: "staging"])
+		ccuManager.activate(context)
 	}
 
 	def "PurgeByUrl"() {
@@ -56,7 +55,7 @@ class CcuManagerImplTest extends Specification {
 		def response = ccuManager.purgeByUrls(["http://test", "http://test2"])
 
 		then:
-		response.httpStatus == 201
+		response.httpStatus == SC_CREATED
 		response.detail == "Request accepted."
 		response.estimatedSeconds == 420
 		response.purgeId == "95b5a092-043f-4af0-843f-aaf0043faaf0"
@@ -70,7 +69,7 @@ class CcuManagerImplTest extends Specification {
 		def response = ccuManager.purgeByCpCode("123456")
 
 		then:
-		response.httpStatus == 201
+		response.httpStatus == SC_CREATED
 		response.detail == "Request accepted."
 		response.estimatedSeconds == 420
 		response.purgeId == "95b5a092-043f-4af0-843f-aaf0043faaf0"
@@ -84,7 +83,7 @@ class CcuManagerImplTest extends Specification {
 		def response = ccuManager.purgeByCpCodes(["123456", "789456"])
 
 		then:
-		response.httpStatus == 201
+		response.httpStatus == SC_CREATED
 		response.detail == "Request accepted."
 		response.estimatedSeconds == 420
 		response.purgeId == "95b5a092-043f-4af0-843f-aaf0043faaf0"
@@ -98,7 +97,7 @@ class CcuManagerImplTest extends Specification {
 		def response = ccuManager.purge(["123456", "789456"], PurgeType.CPCODE, PurgeAction.INVALIDATE, PurgeDomain.PRODUCTION)
 
 		then:
-		response.httpStatus == 201
+		response.httpStatus == SC_CREATED
 		response.detail == "Request accepted."
 		response.estimatedSeconds == 420
 		response.purgeId == "95b5a092-043f-4af0-843f-aaf0043faaf0"
@@ -118,7 +117,7 @@ class CcuManagerImplTest extends Specification {
 		status.purgeId == "142eac1d-99ab-11e3-945a-7784545a7784"
 		status.supportId == "17SY1392844709041263-238396512"
 		status.httpStatus == 200
-		status.completionTime == 10
+		status.completionTime == '2016-06-17T19:28:15Z'
 		status.submittedBy == "test1"
 		status.purgeStatus == "In-Progress"
 		status.submissionTime == "2014-02-19T21:16:20Z"
@@ -141,7 +140,7 @@ class CcuManagerImplTest extends Specification {
 		ccuManager.purgeByUrls(["http://error-403"])
 
 		then:
-		thrown(ExecutionException)
+		thrown(RuntimeException)
 	}
 
 	def cleanupSpec() {

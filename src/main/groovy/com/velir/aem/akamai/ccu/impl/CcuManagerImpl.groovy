@@ -1,115 +1,132 @@
 package com.velir.aem.akamai.ccu.impl
-import java.security.InvalidParameterException
-import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
 
-import com.velir.aem.akamai.ccu.CcuManager
-import com.velir.aem.akamai.ccu.PurgeAction
-import com.velir.aem.akamai.ccu.PurgeDomain
-import com.velir.aem.akamai.ccu.PurgeResponse
-import com.velir.aem.akamai.ccu.PurgeStatus
-import com.velir.aem.akamai.ccu.PurgeType
-import com.velir.aem.akamai.ccu.QueueStatus
-import groovyx.net.http.AsyncHTTPBuilder
-import groovyx.net.http.HttpResponseException
-import org.apache.felix.scr.annotations.Activate
-import org.apache.felix.scr.annotations.Component
-import org.apache.felix.scr.annotations.ConfigurationPolicy
-import org.apache.felix.scr.annotations.Deactivate
-import org.apache.felix.scr.annotations.Property
-import org.apache.felix.scr.annotations.Service
+import com.velir.aem.akamai.ccu.*
+import com.velir.aem.akamai.ccu.auth.Authorization
+import groovyx.net.http.HTTPBuilder
+import groovyx.net.http.Method
+import org.apache.felix.scr.annotations.*
 import org.osgi.service.component.ComponentContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import java.security.InvalidParameterException
+
+import static groovyx.net.http.ContentType.JSON
+import static groovyx.net.http.Method.GET
+import static groovyx.net.http.Method.POST
+import static org.apache.commons.lang.StringUtils.EMPTY
+import static org.apache.sling.commons.osgi.PropertiesUtil.toString
 /**
  * CcuManagerImpl -
  *
  * @author Sebastien Bernard
  */
 @Component(label = "Akamai CCU REST API Manager", description = "Manage calls to the Akamai CCU REST API", metatype = true, immediate = true, policy = ConfigurationPolicy.REQUIRE)
-@Service(value = [CcuManager.class])
+@Service(value = [CcuManager])
+@Properties([
+	@Property(name = "clientToken", description = "", label = "Client Token"),
+	@Property(name = "clientSecret", description = "", label = "Client Secret", passwordValue = ""),
+	@Property(name= "accessToken", description = "", label="Access Token")
+])
 class CcuManagerImpl implements CcuManager {
-	private static final Logger LOG = LoggerFactory.getLogger(CcuManagerImpl.class)
+	private static final Logger LOG = LoggerFactory.getLogger(CcuManagerImpl)
 	private static final String DEFAULT_CCU_URL = "https://api.ccu.akamai.com"
-	public static final PurgeAction DEFAULT_PURGE_ACTION = PurgeAction.REMOVE
-	public static final PurgeDomain DEFAULT_PURGE_DOMAIN = PurgeDomain.PRODUCTION
-	public static final String CONTENT_TYPE = "application/json"
+	static final PurgeAction DEFAULT_PURGE_ACTION = PurgeAction.REMOVE
+	static final PurgeDomain DEFAULT_PURGE_DOMAIN = PurgeDomain.PRODUCTION
+	static final String AUTHORIZATION = 'Authorization'
+	static final String QUEUES_PATH = "/ccu/v2/queues/default"
+	static final String UTF_8 = "UTF-8"
+	public static final Closure VAL_NOT_NULL = { key, value -> value }
+
+	public class Credentials {
+		String clientSecret, clientToken, accessToken
+	}
 
 	@Property(name = "rootCcuUrl", label = "Akamai CCU API URL", value = "https://api.ccu.akamai.com")
-	private String rootCcuUrl;
-	@Property(name = "userName", label = "Username")
-	private String userName;
-	@Property(name = "password", label = "Password")
-	private String password;
+	private String rootCcuUrl
 	@Property(name = "defaultPurgeAction", label = "Default purge action", description = "Can be invalidate, remove (default)", value = "remove")
-	private PurgeAction defaultPurgeAction;
+	private PurgeAction defaultPurgeAction
 	@Property(name = "defaultPurgeDomain", label = "Default purge domain", description = "Can be staging, production (default)", value = "production")
-	private PurgeDomain defaultPurgeDomain;
+	private PurgeDomain defaultPurgeDomain
 
-	private AsyncHTTPBuilder httpBuilder;
+	private Credentials credentials
+
+	private HTTPBuilder httpBuilder
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PurgeResponse purgeByUrl(String url) {
-		purgeByUrls([url]);
+	PurgeResponse purgeByUrl(String url) {
+		purgeByUrls([url])
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PurgeResponse purgeByUrls(Collection<String> urls) {
-		return purge(urls, PurgeType.ARL, defaultPurgeAction, defaultPurgeDomain);
+	PurgeResponse purgeByUrls(Collection<String> urls) {
+		purge(urls, PurgeType.ARL, defaultPurgeAction, defaultPurgeDomain)
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PurgeResponse purgeByCpCode(String cpCode) {
-		return purgeByCpCodes([cpCode]);
+	PurgeResponse purgeByCpCode(String cpCode) {
+		purgeByCpCodes([cpCode])
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PurgeResponse purgeByCpCodes(Collection<String> cpCodes) {
-		return purge(cpCodes, PurgeType.CPCODE, defaultPurgeAction, defaultPurgeDomain);
+	PurgeResponse purgeByCpCodes(Collection<String> cpCodes) {
+		purge(cpCodes, PurgeType.CPCODE, defaultPurgeAction, defaultPurgeDomain)
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PurgeResponse purge(Collection<String> objects, PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain) {
+	PurgeResponse purge(Collection<String> objects, PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain) {
 		Collection<String> uniqueObjects = removeDuplicate(objects)
 		if (!uniqueObjects) {
 			LOG.warn("No objects to invalidate")
-			return PurgeResponse.noResponse();
+			return PurgeResponse.noResponse()
 		}
 
 		logDebug(purgeType, purgeAction, purgeDomain, uniqueObjects)
-
-		Future result = httpBuilder.post(
-			path: "/ccu/v2/queues/default",
-			requestContentType: CONTENT_TYPE,
-			body: [
-				type   : purgeType.name().toLowerCase(),
-				action : purgeAction.name().toLowerCase(),
-				domain : purgeDomain.name().toLowerCase(),
-				objects: uniqueObjects,
-			]) { resp, json -> return new PurgeResponse(json) }
-
-
-		def response = result.get()
-		LOG.debug("Response {}", response);
-		return response;
+		PurgeResponse purgeResponse = null
+		HashMap postBody = [
+			type   : purgeType.name().toLowerCase(),
+			action : purgeAction.name().toLowerCase(),
+			domain : purgeDomain.name().toLowerCase(),
+			objects: uniqueObjects,
+		]
+		httpBuilder.request(POST, JSON){
+			uri.path = QUEUES_PATH
+			headers[AUTHORIZATION] = getAuth(QUEUES_PATH, postBody, POST, headers as HashMap)
+			body = postBody
+			response.success = { resp, json ->
+				purgeResponse = new PurgeResponse(json.findAll(VAL_NOT_NULL))
+			}
+			response.failure = { resp, json ->
+				throw new RuntimeException("Error purging ${resp.status} ${json.detail}")
+			}
+		}
+		LOG.debug("Response {}", purgeResponse)
+		purgeResponse
 	}
 
-	private void logDebug(PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain, Collection<String> uniqueObjects) {
+	private String getAuth(String path, HashMap body, Method method, HashMap headers) {
+		Authorization.builder()
+					 .credentials(credentials).path(path).body(body)
+					 .method(method).headers(headers).rootCcuUrl(rootCcuUrl)
+					 .build().authorization
+	}
+
+	private static void logDebug(PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain, Collection<String> uniqueObjects) {
 		if(LOG.isDebugEnabled()){
 			LOG.debug("Request:")
 			LOG.debug("Type: {}", purgeType)
@@ -124,9 +141,9 @@ class CcuManagerImpl implements CcuManager {
 	 * @param objects the list of objects
 	 * @return a ordered set of objects
 	 */
-	private Collection<String> removeDuplicate(Collection<String> objects) {
+	private static Collection<String> removeDuplicate(Collection<String> objects) {
 		objects.removeAll([null])
-		return objects.unique()
+		objects.unique()
 	}
 
 	/**
@@ -135,56 +152,61 @@ class CcuManagerImpl implements CcuManager {
 	@Override
 	public PurgeStatus getPurgeStatus(String progressUri) {
 		if (!progressUri) {
-			return PurgeStatus.noStatus();
+			return PurgeStatus.noStatus()
+		}
+		PurgeStatus purgeStatus = null
+		httpBuilder.request(GET, JSON){
+			uri.path = progressUri
+			headers[AUTHORIZATION] = getAuth(progressUri, [:] as HashMap, GET, headers as HashMap)
+			response.success = { resp, json ->
+				purgeStatus = new PurgeStatus(json.findAll(VAL_NOT_NULL))
+			}
+			response.failure = { resp, json ->
+				LOG.error("Error getting status", json)
+			}
 		}
 
-		Future result = httpBuilder.get(
-			path: progressUri,
-			requestContentType: CONTENT_TYPE
-		) { resp, json -> return new PurgeStatus(json) }
-
-		return result.get();
+		purgeStatus
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public QueueStatus getQueueStatus() {
-		Future result = httpBuilder.get(
-			path: "/ccu/v2/queues/default",
-			requestContentType: CONTENT_TYPE
-		) { resp, json -> return new QueueStatus(json) }
+	QueueStatus getQueueStatus() {
+		QueueStatus queueStatus = null
+		httpBuilder.request(GET, JSON){
+			uri.path = QUEUES_PATH
+			headers[AUTHORIZATION] = getAuth(QUEUES_PATH, [:] as HashMap, GET, headers as HashMap)
+			response.success = { resp, json ->
+				queueStatus = new QueueStatus(json.findAll(VAL_NOT_NULL))
+			}
+			response.failure = { resp, json ->
+				LOG.error("Error getting status", json)
+			}
+		}
 
-		return result.get();
+		queueStatus
 	}
 
 	@Activate
 	protected void activate(ComponentContext context) {
-		setRootCcuUrl(context.getProperties().get("rootCcuUrl"))
-		setUserName(context.getProperties().get("userName"))
-		setPassword(context.getProperties().get("password"))
-		setDefaultPurgeAction(context.getProperties().get("defaultPurgeAction"))
-		setDefaultPurgeDomain(context.getProperties().get("defaultPurgeDomain"))
-
-		httpBuilder = new AsyncHTTPBuilder(
-			timeout: TimeUnit.SECONDS.toMillis(5).toInteger(),
-			poolSize: 5,
-			uri: rootCcuUrl,
-		)
-		httpBuilder.setContentEncoding("utf-8")
-		httpBuilder.auth.basic userName, password
-		httpBuilder.handler.failure = { resp, json ->
-			LOG.error("Error response : ${json}" )
-			throw new HttpResponseException(resp)
-		}
+		Dictionary props = context.properties
+		this.credentials = new Credentials()
+		setRootCcuUrl(toString(props.get("rootCcuUrl"), EMPTY))
+		setClientToken(toString(props.get("clientToken"), EMPTY))
+		setClientSecret(toString(props.get("clientSecret"), EMPTY))
+		setDefaultPurgeAction(toString(props.get("defaultPurgeAction"), EMPTY))
+		setDefaultPurgeDomain(toString(props.get("defaultPurgeDomain"), EMPTY))
+		setAccessToken(toString(props.get("accessToken"), EMPTY))
+		httpBuilder = new HTTPBuilder(rootCcuUrl)
+		httpBuilder.contentEncoding =  UTF_8
 	}
 
 	@Deactivate
 	protected void deactivate() {
 		httpBuilder = null
-		userName = null
-		password = null
+		credentials = null
 		defaultPurgeAction = null
 		defaultPurgeDomain = null
 	}
@@ -193,23 +215,31 @@ class CcuManagerImpl implements CcuManager {
 		if (rootCcuUrl) {
 			this.rootCcuUrl = rootCcuUrl
 		} else {
-			this.rootCcuUrl = DEFAULT_CCU_URL;
+			this.rootCcuUrl = DEFAULT_CCU_URL
 		}
 	}
 
-	private void setUserName(String userName) {
-		if (!userName) {
-			throw InvalidParameterException("The username is mandatory");
+	private void setClientToken(String clientToken) {
+		if (!clientToken) {
+			throw new InvalidParameterException("The Client Token is mandatory")
 		}
-		this.userName = userName
+		this.credentials.clientToken = clientToken
 	}
 
-	private void setPassword(String password) {
-		if (!password) {
-			throw InvalidParameterException("The username is mandatory");
+	private void setClientSecret(String clientSecret) {
+		if (!clientSecret) {
+			throw new InvalidParameterException("The Client Secret is mandatory")
 		}
-		this.password = password
+		this.credentials.clientSecret = clientSecret
 	}
+
+	private void setAccessToken(String accessToken) {
+		if (!accessToken) {
+			throw new InvalidParameterException("The Access token is mandatory")
+		}
+		this.credentials.accessToken = accessToken
+	}
+
 
 	private void setDefaultPurgeAction(String purgeAction) {
 		if (purgeAction) {
@@ -224,7 +254,7 @@ class CcuManagerImpl implements CcuManager {
 		if (purgeDomain) {
 			this.defaultPurgeDomain = PurgeDomain.valueOf(purgeDomain.toUpperCase())
 		} else {
-			this.defaultPurgeDomain = DEFAULT_PURGE_DOMAIN;
+			this.defaultPurgeDomain = DEFAULT_PURGE_DOMAIN
 		}
 	}
 }

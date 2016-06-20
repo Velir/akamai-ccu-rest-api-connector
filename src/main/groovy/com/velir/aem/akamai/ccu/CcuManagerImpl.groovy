@@ -1,6 +1,5 @@
-package com.velir.aem.akamai.ccu.impl
+package com.velir.aem.akamai.ccu
 
-import com.velir.aem.akamai.ccu.*
 import com.velir.aem.akamai.ccu.auth.Authorization
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method
@@ -36,11 +35,7 @@ class CcuManagerImpl implements CcuManager {
 	static final String AUTHORIZATION = 'Authorization'
 	static final String QUEUES_PATH = "/ccu/v2/queues/default"
 	static final String UTF_8 = "UTF-8"
-	public static final Closure VAL_NOT_NULL = { key, value -> value }
-
-	public class Credentials {
-		String clientSecret, clientToken, accessToken
-	}
+	private static final Closure VAL_NOT_NULL = { key, value -> value }
 
 	@Property(name = "rootCcuUrl", label = "Akamai CCU API URL", value = "https://api.ccu.akamai.com")
 	private String rootCcuUrl
@@ -150,7 +145,7 @@ class CcuManagerImpl implements CcuManager {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PurgeStatus getPurgeStatus(String progressUri) {
+	PurgeStatus getPurgeStatus(String progressUri) {
 		if (!progressUri) {
 			return PurgeStatus.noStatus()
 		}

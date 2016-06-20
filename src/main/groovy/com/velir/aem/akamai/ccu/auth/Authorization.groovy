@@ -1,7 +1,7 @@
 package com.velir.aem.akamai.ccu.auth
 
+import com.velir.aem.akamai.ccu.Credentials
 import com.velir.aem.akamai.ccu.Timestamp
-import com.velir.aem.akamai.ccu.impl.CcuManagerImpl
 import groovy.transform.builder.Builder
 import groovyx.net.http.Method
 
@@ -14,7 +14,7 @@ import static java.util.UUID.randomUUID
  */
 @Builder
 class Authorization {
-	CcuManagerImpl.Credentials credentials
+	Credentials credentials
 	String path, rootCcuUrl
 	HashMap body, headers
 	Method method

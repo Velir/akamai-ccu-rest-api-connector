@@ -5,7 +5,7 @@ package com.velir.aem.akamai.ccu
  *
  * @author Sebastien Bernard
  */
-public interface CcuManager {
+interface CcuManager {
 	/**
 	 * Purge using url and default params. If url is null return PurgeReponse with httpStatus = -1
 	 * @param url the url to purge

@@ -11,13 +11,13 @@ import org.slf4j.LoggerFactory
  * @author Sebastien Bernard
  */
 class Activator implements BundleActivator {
-	private static final Logger LOG = LoggerFactory.getLogger(Activator.class);
+	private static final Logger LOG = LoggerFactory.getLogger(Activator)
 
-	public void start(final BundleContext context) throws Exception {
-		LOG.info(context.getBundle().getSymbolicName() + " started");
+	void start(final BundleContext context) throws Exception {
+		LOG.info(context.getBundle().getSymbolicName() + " started")
 	}
 
-	public void stop(final BundleContext context) throws Exception {
-		LOG.info(context.getBundle().getSymbolicName() + " stopped");
+	void stop(final BundleContext context) throws Exception {
+		LOG.info(context.getBundle().getSymbolicName() + " stopped")
 	}
 }

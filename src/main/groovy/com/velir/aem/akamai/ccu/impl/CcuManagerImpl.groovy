@@ -1,5 +1,13 @@
-package com.velir.aem.akamai.ccu
+package com.velir.aem.akamai.ccu.impl
 
+import com.velir.aem.akamai.ccu.CcuManager
+import com.velir.aem.akamai.ccu.Credentials
+import com.velir.aem.akamai.ccu.PurgeAction
+import com.velir.aem.akamai.ccu.PurgeDomain
+import com.velir.aem.akamai.ccu.PurgeResponse
+import com.velir.aem.akamai.ccu.PurgeStatus
+import com.velir.aem.akamai.ccu.PurgeType
+import com.velir.aem.akamai.ccu.QueueStatus
 import com.velir.aem.akamai.ccu.auth.Authorization
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method

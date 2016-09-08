@@ -1,11 +1,13 @@
 package com.velir.aem.akamai.ccu.impl
+
 import com.day.cq.replication.ReplicationAction
 import org.apache.felix.scr.annotations.Component
 import org.apache.felix.scr.annotations.Property
+import org.apache.felix.scr.annotations.Reference
 import org.apache.felix.scr.annotations.Service
 import org.apache.sling.commons.osgi.PropertiesUtil
-import org.apache.sling.event.EventUtil
 import org.apache.sling.event.jobs.JobManager
+import org.apache.sling.settings.SlingSettingsService
 import org.osgi.service.component.ComponentContext
 import org.osgi.service.event.Event
 import org.osgi.service.event.EventConstants
@@ -26,14 +28,17 @@ import org.slf4j.LoggerFactory
 class AkamaiEventHandler implements EventHandler {
 	private final static Logger LOG = LoggerFactory.getLogger(AkamaiEventHandler)
 
-	@org.apache.felix.scr.annotations.Reference
+	@Reference
 	private JobManager jobManager
+
+	@Reference
+	private SlingSettingsService settingsService
 
 	private Set<String> pathsHandled
 
 	@Override
 	void handleEvent(Event event) {
-		if (EventUtil.isLocal(event)) {
+		if (isLocal(event)) {
 			LOG.debug("Start handling event to add Akamai job")
 			String[] paths = PropertiesUtil.toStringArray(event.getProperty(FlushAkamaiItemsJob.PATHS))
 			Set<String> validPaths = filterValidPath(paths)
@@ -45,6 +50,11 @@ class AkamaiEventHandler implements EventHandler {
 				LOG.debug("{} has no valid path(s) to purge. No Job added", paths)
 			}
 		}
+	}
+
+	boolean isLocal(Event event) {
+		def appId = event.getProperty("event.application")
+		!appId || appId == settingsService.slingId
 	}
 
 	private Set<String> filterValidPath(String[] paths) {

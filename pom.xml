@@ -65,12 +65,6 @@
 
 	<dependencies>
 		<!-- Adobe -->
-		<dependency>
-			<groupId>com.adobe.granite</groupId>
-			<artifactId>com.adobe.granite.replication.core</artifactId>
-			<version>6.0.14</version>
-			<scope>provided</scope>
-		</dependency>
 
 		<!-- Sling -->
 		<dependency>

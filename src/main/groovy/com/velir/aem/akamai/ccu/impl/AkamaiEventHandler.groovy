@@ -1,6 +1,5 @@
 package com.velir.aem.akamai.ccu.impl
 
-import com.day.cq.replication.ReplicationAction
 import org.apache.felix.scr.annotations.Component
 import org.apache.felix.scr.annotations.Property
 import org.apache.felix.scr.annotations.Reference
@@ -22,7 +21,7 @@ import org.slf4j.LoggerFactory
 @Component(label = "Akamai Event Handler", description = "Listen to repository replication notification to invalidate Akamai cache when it is needed", metatype = true, immediate = true)
 @Service(value = [AkamaiEventHandler, EventHandler])
 @org.apache.felix.scr.annotations.Properties(value = [
-	@Property(name = EventConstants.EVENT_TOPIC, value = ReplicationAction.EVENT_TOPIC, label = "Event topic"),
+	@Property(name = EventConstants.EVENT_TOPIC, value = "com/day/cq/replication", label = "Event topic"),
 	@Property(name = "pathsHandled", value = ["/content/dam"], label = "Handled paths")
 ])
 class AkamaiEventHandler implements EventHandler {

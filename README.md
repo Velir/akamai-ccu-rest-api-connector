@@ -9,6 +9,8 @@ and settings. The connector provides all services that you can request via the R
 The bundle is made to be as light as possible and can be installed just by itself. You will need groovy-all version 2.4.7 to be installed along with some others bundles like
 httpclient, commons-collections, commons-lang ... but they usually are already there.
 
+As of version 2.2, this bundle requires AEM 6.2
+
 ## Implementation
 
 There are three major classes that manage the invalidation :

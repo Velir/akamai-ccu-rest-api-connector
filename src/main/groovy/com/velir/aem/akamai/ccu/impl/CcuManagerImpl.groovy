@@ -1,22 +1,17 @@
 package com.velir.aem.akamai.ccu.impl
 
-import com.velir.aem.akamai.ccu.CcuManager
-import com.velir.aem.akamai.ccu.Credentials
-import com.velir.aem.akamai.ccu.PurgeAction
-import com.velir.aem.akamai.ccu.PurgeDomain
-import com.velir.aem.akamai.ccu.PurgeResponse
-import com.velir.aem.akamai.ccu.PurgeStatus
-import com.velir.aem.akamai.ccu.PurgeType
-import com.velir.aem.akamai.ccu.QueueStatus
+import com.velir.aem.akamai.ccu.*
 import com.velir.aem.akamai.ccu.auth.Authorization
-import groovyx.net.http.HTTPBuilder
+import groovyx.net.http.AsyncHTTPBuilder
 import groovyx.net.http.Method
 import org.apache.felix.scr.annotations.*
+import org.apache.sling.commons.osgi.PropertiesUtil
 import org.osgi.service.component.ComponentContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import java.security.InvalidParameterException
+import java.util.concurrent.Future
 
 import static groovyx.net.http.ContentType.JSON
 import static groovyx.net.http.Method.GET
@@ -33,7 +28,8 @@ import static org.apache.sling.commons.osgi.PropertiesUtil.toString
 @Properties([
 	@Property(name = "clientToken", description = "", label = "Client Token"),
 	@Property(name = "clientSecret", description = "", label = "Client Secret", passwordValue = ""),
-	@Property(name= "accessToken", description = "", label="Access Token")
+	@Property(name= "accessToken", description = "", label="Access Token"),
+	@Property(name = "threadPoolSize", description= "Number of threads for concurrent HTTP connections", longValue = 10l)
 ])
 class CcuManagerImpl implements CcuManager {
 	private static final Logger LOG = LoggerFactory.getLogger(CcuManagerImpl)
@@ -44,6 +40,7 @@ class CcuManagerImpl implements CcuManager {
 	static final String QUEUES_PATH = "/ccu/v2/queues/default"
 	static final String UTF_8 = "UTF-8"
 	private static final Closure VAL_NOT_NULL = { key, value -> value }
+	private static final int DEFAULT_POOL_SIZE = 10
 
 	@Property(name = "rootCcuUrl", label = "Akamai CCU API URL", value = "https://api.ccu.akamai.com")
 	private String rootCcuUrl
@@ -54,7 +51,7 @@ class CcuManagerImpl implements CcuManager {
 
 	private Credentials credentials
 
-	private HTTPBuilder httpBuilder
+	private AsyncHTTPBuilder asyncHTTPBuilder
 
 	/**
 	 * {@inheritDoc}
@@ -100,24 +97,19 @@ class CcuManagerImpl implements CcuManager {
 		}
 
 		logDebug(purgeType, purgeAction, purgeDomain, uniqueObjects)
-		PurgeResponse purgeResponse = null
 		HashMap postBody = [
 			type   : purgeType.name().toLowerCase(),
 			action : purgeAction.name().toLowerCase(),
 			domain : purgeDomain.name().toLowerCase(),
 			objects: uniqueObjects,
 		]
-		httpBuilder.request(POST, JSON){
+		Future response = asyncHTTPBuilder.request(POST, JSON) {
 			uri.path = QUEUES_PATH
 			headers[AUTHORIZATION] = getAuth(QUEUES_PATH, postBody, POST, headers as HashMap)
 			body = postBody
-			response.success = { resp, json ->
-				purgeResponse = new PurgeResponse(json.findAll(VAL_NOT_NULL))
-			}
-			response.failure = { resp, json ->
-				throw new RuntimeException("Error purging ${resp.status} ${json.detail}")
-			}
 		}
+		def json = response.get()
+		PurgeResponse purgeResponse = new PurgeResponse(json.findAll(VAL_NOT_NULL))
 		LOG.debug("Response {}", purgeResponse)
 		purgeResponse
 	}
@@ -157,19 +149,14 @@ class CcuManagerImpl implements CcuManager {
 		if (!progressUri) {
 			return PurgeStatus.noStatus()
 		}
-		PurgeStatus purgeStatus = null
-		httpBuilder.request(GET, JSON){
+
+		Future response = asyncHTTPBuilder.request(GET, JSON){
 			uri.path = progressUri
 			headers[AUTHORIZATION] = getAuth(progressUri, [:] as HashMap, GET, headers as HashMap)
-			response.success = { resp, json ->
-				purgeStatus = new PurgeStatus(json.findAll(VAL_NOT_NULL))
-			}
-			response.failure = { resp, json ->
-				LOG.error("Error getting status", json)
-			}
 		}
-
-		purgeStatus
+		def json = response.get()
+		LOG.debug("purge response {}", json)
+		new PurgeStatus(json.findAll(VAL_NOT_NULL))
 	}
 
 	/**
@@ -177,19 +164,13 @@ class CcuManagerImpl implements CcuManager {
 	 */
 	@Override
 	QueueStatus getQueueStatus() {
-		QueueStatus queueStatus = null
-		httpBuilder.request(GET, JSON){
+		Future response = asyncHTTPBuilder.request(GET, JSON){
 			uri.path = QUEUES_PATH
 			headers[AUTHORIZATION] = getAuth(QUEUES_PATH, [:] as HashMap, GET, headers as HashMap)
-			response.success = { resp, json ->
-				queueStatus = new QueueStatus(json.findAll(VAL_NOT_NULL))
-			}
-			response.failure = { resp, json ->
-				LOG.error("Error getting status", json)
-			}
 		}
-
-		queueStatus
+		def json = response.get()
+		LOG.debug("Queue status response {}", json)
+		new QueueStatus(json.findAll(VAL_NOT_NULL))
 	}
 
 	@Activate
@@ -202,24 +183,21 @@ class CcuManagerImpl implements CcuManager {
 		setDefaultPurgeAction(toString(props.get("defaultPurgeAction"), EMPTY))
 		setDefaultPurgeDomain(toString(props.get("defaultPurgeDomain"), EMPTY))
 		setAccessToken(toString(props.get("accessToken"), EMPTY))
-		httpBuilder = new HTTPBuilder(rootCcuUrl)
-		httpBuilder.contentEncoding =  UTF_8
+		long poolSize = PropertiesUtil.toLong(props.get("threadPoolSize"), DEFAULT_POOL_SIZE)
+		asyncHTTPBuilder = new AsyncHTTPBuilder(poolSize: poolSize, uri: rootCcuUrl, contentType: JSON)
+		asyncHTTPBuilder.contentEncoding =  UTF_8
 	}
 
 	@Deactivate
 	protected void deactivate() {
-		httpBuilder = null
+		asyncHTTPBuilder = null
 		credentials = null
 		defaultPurgeAction = null
 		defaultPurgeDomain = null
 	}
 
 	private void setRootCcuUrl(String rootCcuUrl) {
-		if (rootCcuUrl) {
-			this.rootCcuUrl = rootCcuUrl
-		} else {
-			this.rootCcuUrl = DEFAULT_CCU_URL
-		}
+		this.rootCcuUrl = rootCcuUrl?:DEFAULT_CCU_URL
 	}
 
 	private void setClientToken(String clientToken) {
@@ -245,19 +223,10 @@ class CcuManagerImpl implements CcuManager {
 
 
 	private void setDefaultPurgeAction(String purgeAction) {
-		if (purgeAction) {
-			this.defaultPurgeAction = PurgeAction.valueOf(purgeAction.toUpperCase())
-		} else {
-			this.defaultPurgeAction = DEFAULT_PURGE_ACTION
-		}
-
+		this.defaultPurgeAction = purgeAction? PurgeAction.valueOf(purgeAction.toUpperCase()) : DEFAULT_PURGE_ACTION
 	}
 
 	private void setDefaultPurgeDomain(String purgeDomain) {
-		if (purgeDomain) {
-			this.defaultPurgeDomain = PurgeDomain.valueOf(purgeDomain.toUpperCase())
-		} else {
-			this.defaultPurgeDomain = DEFAULT_PURGE_DOMAIN
-		}
+		this.defaultPurgeDomain = purgeDomain? PurgeDomain.valueOf(purgeDomain.toUpperCase()) : DEFAULT_PURGE_DOMAIN
 	}
 }

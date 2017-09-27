@@ -7,6 +7,8 @@ import com.velir.aem.akamai.ccu.PurgeType
 import org.osgi.service.component.ComponentContext
 import spock.lang.Specification
 
+import java.util.concurrent.ExecutionException
+
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import static org.apache.http.HttpStatus.SC_CREATED
 /**
@@ -140,7 +142,7 @@ class CcuManagerImplTest extends Specification {
 		ccuManager.purgeByUrls(["http://error-403"])
 
 		then:
-		thrown(RuntimeException)
+		thrown(ExecutionException)
 	}
 
 	def cleanupSpec() {

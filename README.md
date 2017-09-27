@@ -51,7 +51,8 @@ Each of these classes can be configured to fit you need and your Akamai credenti
 	clientSecret="your_clientSecret"
 	accessToken="your_accessToken"
 	defaultPurgeAction="remove"
-	defaultPurgeDomain="production"/>
+	defaultPurgeDomain="production"
+	threadPoolSize="5"/>
 ```
 For more info on credentials see https://developer.akamai.com/introduction/Prov_Creds.html
 
@@ -62,6 +63,8 @@ defaultPurgeAction : The default purge if not specified.
 defaultPurgeDomain : The default domain if not specified.
     - production: (default)
     - staging:
+    
+threadPoolSize : Number of threads to dedicate to the API HTTP Client. Defaults to 5.
 
 - AkamaiEventHandler: *com.velir.aem.akamai.ccu.impl.AkamaiEventHandler.xml*
 

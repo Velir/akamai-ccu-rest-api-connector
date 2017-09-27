@@ -29,7 +29,7 @@ import static org.apache.sling.commons.osgi.PropertiesUtil.toString
 	@Property(name = "clientToken", description = "", label = "Client Token"),
 	@Property(name = "clientSecret", description = "", label = "Client Secret", passwordValue = ""),
 	@Property(name= "accessToken", description = "", label="Access Token"),
-	@Property(name = "threadPoolSize", description= "Number of threads for concurrent HTTP connections", longValue = 10l)
+	@Property(name = "threadPoolSize", description= "Number of threads for concurrent HTTP connections", longValue = 5l)
 ])
 class CcuManagerImpl implements CcuManager {
 	private static final Logger LOG = LoggerFactory.getLogger(CcuManagerImpl)
@@ -40,7 +40,7 @@ class CcuManagerImpl implements CcuManager {
 	static final String QUEUES_PATH = "/ccu/v2/queues/default"
 	static final String UTF_8 = "UTF-8"
 	private static final Closure VAL_NOT_NULL = { key, value -> value }
-	private static final int DEFAULT_POOL_SIZE = 10
+	private static final int DEFAULT_POOL_SIZE = 5
 
 	@Property(name = "rootCcuUrl", label = "Akamai CCU API URL", value = "https://api.ccu.akamai.com")
 	private String rootCcuUrl

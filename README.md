@@ -21,11 +21,18 @@ sure that the list contains only unique values and adds them to the invalidate c
 
 ```groovy
 def response = ccuManager.purgeByUrls(["http://www.mysite.com/test", "http://www.mysite.com/test2"])
-def response = ccuManager.purgeByCpCode("CPCODE1")
-def response = ccuManager.purge(["http://www.mysite.com/test", "http://www.mysite.com/test2"], PurgeType.ARL, PurgeAction.REMOVE, PurgeDomain.PRODUCTION)
+response = ccuManager.purgeByCpCode("CPCODE1")
+response = ccuManager.purge(["http://www.mysite.com/test", "http://www.mysite.com/test2"], PurgeType.ARL, PurgeAction.REMOVE, PurgeDomain.PRODUCTION)
+```
+If your account has fast purge enabled you may use the fast purge methods.  Fast purge requires at least a list of objects and the object type. They will use the default domain and action unless they are provided.
+```groovy
+def response = ccuManager.fastPurge(["http://www.mysite.com/test", "http://www.mysite.com/test2"], FastPurgeType.URL, PurgeAction.INVALIDATE, PurgeDomain.STAGING)
+response = ccuManager.fastPurge(["http://www.mysite.com/test", "http://www.mysite.com/test2"], FastPurgeType.URL)
+response = ccuManager.fastPurge(["CPCODE1"], FastPurgeType.CPCODE)
+response = ccuManager.fastPurge(["tag1"], FastPurgeType.TAG)
 ```
 
-The minimum configuration needed for that service are your Akamai credentials : "userName" and "password".
+The minimum configuration needed for that service are your Akamai API tokens and secret.
 
 - AkamaiEventHandler is an event handler that listens to com/day/cq/replication by default and just adds a job to a dedicated queue ("com/velir/aem/akamai/ccu/impl/FlushAkamaiItemsJob")
 if the path to invalidate begins with one of the values specified in the list "pathsHandled" (By default it is /content/dam).

@@ -90,11 +90,12 @@ pathsHandled: Comma separated list of paths that can be invalidated.
 <?xml version="1.0" encoding="UTF-8"?>
 <jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"
     jcr:primaryType="sling:OsgiConfig"
-    rootSiteUrl="http://www.mysite.com"/>
+    rootSiteUrl="http://www.mysite.com"
+    useFastPurge="{Boolean}true"/>
 ```
 
 rootSiteUrl: The root site url that is prepended to the path being invalidated.
-
+useFastPurge: Whether the Job should use the CCU v3 Fast Purge API or the v2 old API
 ## Who are we
 
 Velir is a Web Agency that provides a large scale of expertise in user experience design, content management, and marketing platform integrations. Our clients partner with us

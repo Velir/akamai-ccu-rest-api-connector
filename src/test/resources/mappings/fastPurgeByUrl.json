@@ -1,0 +1,17 @@
+{
+    "request": {
+        "method": "POST",
+        "url": "/ccu/v3/delete/url/staging",
+        "bodyPatterns": [
+            { "doesNotMatch": ".*error.*" }
+        ]
+    },
+    "response": {
+        "status": 200,
+        "headers": {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache"
+        },
+        "body": "{\"detail\":\"Request accepted\",\"estimatedSeconds\":5,\"httpStatus\":201,\"purgeId\":\"071f21e2-a4a1-11e7-a256-30aa294ba4e2\",\"supportId\":\"18PY1506529766263100-178070745\"}"
+    }
+}

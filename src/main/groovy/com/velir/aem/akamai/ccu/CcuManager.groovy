@@ -35,14 +35,14 @@ interface CcuManager {
 	PurgeResponse purgeByCpCodes(Collection<String> cpCodes)
 
 	/**
-	 * Purge method where you can specify all params for your akamai request. If objets is null or empty return PurgeReponse with httpStatus = -1
-	 * @param objets the collection of object to invalidate
+	 * Purge method where you can specify all params for your akamai request. If objects is null or empty return PurgeReponse with httpStatus = -1
+	 * @param objects the collection of object to invalidate
 	 * @param purgeType the purgeType to use
 	 * @param purgeAction the purgeAction to use
 	 * @param purgeDomain the purgeDomain to use
 	 * @return a {@link PurgeResponse}
 	 */
-	PurgeResponse purge(Collection<String> objets, PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain)
+	PurgeResponse purge(Collection<String> objects, PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain)
 
 	/**
 	 * Return the status of a purge
@@ -56,4 +56,22 @@ interface CcuManager {
 	 * @return a {@link QueueStatus}
 	 */
 	QueueStatus getQueueStatus()
+
+	/**
+	 * Performs a fast purge for multiple object types on default params
+	 * @param objects list of objects to purge
+	 * @param type type of objects, urls, cp codes or tags
+	 * @return a PurgeResponse
+	 */
+	FastPurgeResponse fastPurge(Collection<String> objects, FastPurgeType type)
+
+	/**
+	 * Performs a fast purge for multiple object types
+	 * @param objects objects list of objects to purge
+	 * @param type type type of objects, urls, cp codes or tags
+	 * @param purgeAction invalidate or remove
+	 * @param purgeDomain staging or production
+	 * @return
+	 */
+	FastPurgeResponse fastPurge(Collection<String> objects, FastPurgeType type, PurgeAction purgeAction, PurgeDomain purgeDomain)
 }

@@ -5,7 +5,17 @@ package com.velir.aem.akamai.ccu
  *
  * @author Sebastien Bernard
  */
-public enum PurgeAction {
-	REMOVE,
-	INVALIDATE
+enum PurgeAction {
+	REMOVE('delete'),
+	INVALIDATE('invalidate')
+
+	private String apiVal
+
+	PurgeAction(String apiVal) {
+		this.apiVal = apiVal
+	}
+
+	String getApiVal() {
+		return apiVal
+	}
 }

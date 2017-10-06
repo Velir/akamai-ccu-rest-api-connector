@@ -38,6 +38,7 @@ class CcuManagerImpl implements CcuManager {
 	static final PurgeDomain DEFAULT_PURGE_DOMAIN = PurgeDomain.PRODUCTION
 	static final String AUTHORIZATION = 'Authorization'
 	static final String QUEUES_PATH = "/ccu/v2/queues/default"
+	private static final String FAST_PURGE_URI_BASE =  '/ccu/v3/%1$s/%2$s/%3$s'
 	static final String UTF_8 = "UTF-8"
 	private static final Closure VAL_NOT_NULL = { key, value -> value }
 	private static final int DEFAULT_POOL_SIZE = 5
@@ -171,6 +172,23 @@ class CcuManagerImpl implements CcuManager {
 		def json = response.get()
 		LOG.debug("Queue status response {}", json)
 		new QueueStatus(json.findAll(VAL_NOT_NULL))
+	}
+
+	@Override
+	FastPurgeResponse fastPurge(Collection<String> objects, FastPurgeType type) {
+		fastPurge(objects, type, defaultPurgeAction, defaultPurgeDomain)
+	}
+
+	@Override
+	FastPurgeResponse fastPurge(Collection<String> objects, FastPurgeType type, PurgeAction purgeAction, PurgeDomain purgeDomain) {
+		String purgeUri = sprintf(FAST_PURGE_URI_BASE, [purgeAction.apiVal, type.name().toLowerCase(), purgeDomain.name().toLowerCase()])
+		Map postBody = [objects : objects]
+		Future future = asyncHTTPBuilder.request(POST, JSON){
+			uri.path = purgeUri
+			headers[AUTHORIZATION] = getAuth(purgeUri, postBody as HashMap, POST, headers as HashMap)
+			body = postBody
+		}
+		new FastPurgeResponse(future.get())
 	}
 
 	@Activate

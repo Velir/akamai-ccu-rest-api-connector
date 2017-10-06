@@ -1,6 +1,8 @@
 package com.velir.aem.akamai.ccu.impl
 
 import com.velir.aem.akamai.ccu.CcuManager
+import com.velir.aem.akamai.ccu.FastPurgeResponse
+import com.velir.aem.akamai.ccu.FastPurgeType
 import com.velir.aem.akamai.ccu.PurgeResponse
 import org.apache.felix.scr.annotations.Component
 import org.apache.felix.scr.annotations.Property
@@ -21,7 +23,8 @@ import org.slf4j.LoggerFactory
 @Service(value = [FlushAkamaiItemsJob, JobConsumer])
 @org.apache.felix.scr.annotations.Properties(value = [
 	@Property(name = JobConsumer.PROPERTY_TOPICS, value = FlushAkamaiItemsJob.JOB_TOPIC),
-	@Property(name = "rootSiteUrl", value = "", label = "Root site url", description = "Scheme and domain to append at the beginning of the paths like http://www.velir.com")
+	@Property(name = "rootSiteUrl", value = "", label = "Root site url", description = "Scheme and domain to append at the beginning of the paths like http://www.velir.com"),
+	@Property(name = "useFastPurge", boolValue = false, label = "Use fast purge?", description = "Check to use the fast purge option for automatic flushes")
 ])
 class FlushAkamaiItemsJob implements JobConsumer {
 	private static final Logger LOG = LoggerFactory.getLogger(FlushAkamaiItemsJob)
@@ -32,6 +35,8 @@ class FlushAkamaiItemsJob implements JobConsumer {
 	private CcuManager ccuManager
 
 	private String rootSiteUrl
+
+	private boolean useFastPurge = false
 
 	@Override
 	JobConsumer.JobResult process(Job job) {
@@ -44,10 +49,20 @@ class FlushAkamaiItemsJob implements JobConsumer {
 
 		Set<String> absoluteUrls = prependPathWithRootUrl(pathsToPurge)
 		logUrls(absoluteUrls)
+		JobConsumer.JobResult result = purge(absoluteUrls)
+		result
+	}
 
-		PurgeResponse response = ccuManager.purgeByUrls(absoluteUrls)
-
-		convertToJobResult(response)
+	private JobConsumer.JobResult purge(Set<String> absoluteUrls) {
+		JobConsumer.JobResult result
+		if (!useFastPurge) {
+			PurgeResponse response = ccuManager.purgeByUrls(absoluteUrls)
+			result = convertToJobResult(response)
+		} else {
+			FastPurgeResponse purge = ccuManager.fastPurge(absoluteUrls, FastPurgeType.URL)
+			result = purge.httpStatus == 201 ? JobConsumer.JobResult.OK : JobConsumer.JobResult.FAILED
+		}
+		result
 	}
 
 	private static logUrls(Set<String> pathsToPurge) {
@@ -90,6 +105,8 @@ class FlushAkamaiItemsJob implements JobConsumer {
 	}
 
 	public void activate(ComponentContext context) {
-		rootSiteUrl = PropertiesUtil.toString(context.getProperties().get("rootSiteUrl"), "")
+		Dictionary props = context.properties
+		rootSiteUrl = PropertiesUtil.toString(props.get("rootSiteUrl"), "")
+		useFastPurge = PropertiesUtil.toBoolean(props.get("useFastPurge"), false)
 	}
 }

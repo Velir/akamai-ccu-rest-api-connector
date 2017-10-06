@@ -1,8 +1,8 @@
 package com.velir.aem.akamai.ccu.impl
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.velir.aem.akamai.ccu.PurgeAction
-import com.velir.aem.akamai.ccu.PurgeDomain
+import com.velir.aem.akamai.ccu.FastPurgeResponse
+import com.velir.aem.akamai.ccu.FastPurgeType
 import com.velir.aem.akamai.ccu.PurgeType
 import org.osgi.service.component.ComponentContext
 import spock.lang.Specification
@@ -10,7 +10,11 @@ import spock.lang.Specification
 import java.util.concurrent.ExecutionException
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import static com.velir.aem.akamai.ccu.PurgeAction.INVALIDATE
+import static com.velir.aem.akamai.ccu.PurgeDomain.PRODUCTION
+import static FastPurgeType.CPCODE
 import static org.apache.http.HttpStatus.SC_CREATED
+
 /**
  * CcuManagerImplTest -
  *
@@ -96,7 +100,7 @@ class CcuManagerImplTest extends Specification {
 
 	def "Purge"() {
 		when:
-		def response = ccuManager.purge(["123456", "789456"], PurgeType.CPCODE, PurgeAction.INVALIDATE, PurgeDomain.PRODUCTION)
+		def response = ccuManager.purge(["123456", "789456"], PurgeType.CPCODE, INVALIDATE, PRODUCTION)
 
 		then:
 		response.httpStatus == SC_CREATED
@@ -143,6 +147,30 @@ class CcuManagerImplTest extends Specification {
 
 		then:
 		thrown(ExecutionException)
+	}
+
+	def "Fast Purge with defaults"(){
+		when:
+		FastPurgeResponse response = ccuManager.fastPurge(["http://www.foo.bar"], FastPurgeType.URL)
+
+		then:
+		response.detail == 'Request accepted'
+		response.estimatedSeconds == 5
+		response.httpStatus == 201
+		response.purgeId == '071f21e2-a4a1-11e7-a256-30aa294ba4e2'
+		response.supportId == '18PY1506529766263100-178070745'
+	}
+
+	def "Fast Purge with options"(){
+		when:
+		FastPurgeResponse response = ccuManager.fastPurge(["http://www.foo.bar"], CPCODE, INVALIDATE, PRODUCTION)
+
+		then:
+		response.detail == 'Request accepted'
+		response.estimatedSeconds == 5
+		response.httpStatus == 201
+		response.purgeId == '071f21e2-a4a1-11e7-a256-30aa294ba4e2'
+		response.supportId == '18PY1506529766263100-178070745'
 	}
 
 	def cleanupSpec() {

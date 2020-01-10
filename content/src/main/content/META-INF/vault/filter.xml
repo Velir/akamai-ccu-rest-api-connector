@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspaceFilter version="1.0">
+    <filter root="/apps/velir"/>
+    <filter root="/apps/cq/core/content/nav/tools/velir" />
+    <filter root="/etc/velir/akamaiflush"/>
+</workspaceFilter>

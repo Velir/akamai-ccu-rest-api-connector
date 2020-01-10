@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"
+    jcr:primaryType="sling:OrderedFolder"
+    jcr:title="Velir"
+    id="velir">
+    <akamai
+        jcr:primaryType="nt:unstructured"
+        jcr:title="Akamai CCU Admin"
+        jcr:description="Manage Akamai Flush commands"
+        icon="refresh"
+        href="/etc/velir/akamaiflush.html"
+        id="velir-akamaiadmin"
+        target="_blank"/>
+</jcr:root>

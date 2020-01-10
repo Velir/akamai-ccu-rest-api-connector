@@ -6,3 +6,5 @@
 
 # Maven
 target/
+bundle/target
+content/target

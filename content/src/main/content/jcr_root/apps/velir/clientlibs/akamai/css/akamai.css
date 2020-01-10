@@ -1,0 +1,10 @@
+.content-container .content-container-inner {
+	width: 95%;
+	margin: 20px auto;
+}
+.content-container .coral-Heading--1 {
+	padding : 20px;
+}
+.content-container .coral-Heading--1 img {
+	height: 60px;
+}

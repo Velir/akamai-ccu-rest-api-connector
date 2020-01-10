@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html class="coral-App">
+<sly data-sly-use.clientlib="/libs/granite/sightly/templates/clientlib.html"></sly>
+<head>
+	<meta charset="UTF-8">
+	<title>Akamai Flush Admin</title>
+	<link rel="shortcut icon" href="/etc.clientlibs/velir/clientlibs/akamai/resources/favicon_2.ico"/>
+	<sly data-sly-call="${clientlib.all @ categories='velir.akamai'}"></sly>
+</head>
+<body class="coral--light">
+<div class="akamai-flush-app">
+	<sly data-sly-include="header.html"></sly>
+	<div class="page" role="main">
+		<div class="content">
+			<div class="content-container">
+				<div class="content-container-inner">
+					<h1 class="coral-Heading coral-Heading--1"><img src="/etc.clientlibs/velir/clientlibs/akamai/resources/logo.png"/>Akamai Flush Admin</h1>
+					<sly data-sly-include="form.html"></sly>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

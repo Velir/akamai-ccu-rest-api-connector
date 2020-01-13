@@ -2,14 +2,14 @@
 
 ## Description
 
-This bundle provides a "ready to use" OSGI connector for the new Akamai Open CCU V2 REST API. This connector has been written in groovy using the http-builder framework.
+This bundle provides a "ready to use" OSGI connector for the Akamai Open CCU V3 REST API. This connector has been written in groovy using the http-builder framework.
 It is designed to enable cache invalidation for AEM/CQ CMS when assets get invalidated. It can be easily configured with your own credentials
-and settings. The connector provides all services that you can request via the REST API like getPurgeStatus(), getQueueStatus(), and the most important purge().
+and settings. The connector provides all services that you can request via the REST API as well as convinence 
 
 The bundle is made to be as light as possible and can be installed just by itself. You will need groovy-all version 2.4.7 to be installed along with some others bundles like
 httpclient, commons-collections, commons-lang ... but they usually are already there.
 
-As of version 2.2, this bundle requires AEM 6.2+
+As of version 2.5, this bundle requires AEM 6.3+
 
 ## Implementation
 
@@ -20,13 +20,11 @@ to invalidate cached objects. You can invalidate by CP code or ARL depending on 
 sure that the list contains only unique values and adds them to the invalidate caching request.
 
 ```groovy
-def response = ccuManager.purgeByUrls(["http://www.mysite.com/test", "http://www.mysite.com/test2"])
-response = ccuManager.purgeByCpCode("CPCODE1")
-response = ccuManager.purge(["http://www.mysite.com/test", "http://www.mysite.com/test2"], PurgeType.ARL, PurgeAction.REMOVE, PurgeDomain.PRODUCTION)
-```
-If your account has fast purge enabled you may use the fast purge methods.  Fast purge requires at least a list of objects and the object type. They will use the default domain and action unless they are provided.
-```groovy
-def response = ccuManager.fastPurge(["http://www.mysite.com/test", "http://www.mysite.com/test2"], FastPurgeType.URL, PurgeAction.INVALIDATE, PurgeDomain.STAGING)
+def response = ccuManager.fastPurgeByUrls(["http://www.mysite.com/test", "http://www.mysite.com/test2"])
+response = ccuManager.fastPurgeByCpCode("CPCODE1")
+response = ccuManager.fastPurge(["http://www.mysite.com/test", "http://www.mysite.com/test2"], PurgeType.ARL, PurgeAction.REMOVE, PurgeDomain.PRODUCTION)
+response = ccuManager.fastPurgeByTags(['tag1', 'tag2'])
+response = ccuManager.fastPurge(["http://www.mysite.com/test", "http://www.mysite.com/test2"], FastPurgeType.URL, PurgeAction.INVALIDATE, PurgeDomain.STAGING)
 response = ccuManager.fastPurge(["http://www.mysite.com/test", "http://www.mysite.com/test2"], FastPurgeType.URL)
 response = ccuManager.fastPurge(["CPCODE1"], FastPurgeType.CPCODE)
 response = ccuManager.fastPurge(["tag1"], FastPurgeType.TAG)
@@ -90,12 +88,12 @@ pathsHandled: Comma separated list of paths that can be invalidated.
 <?xml version="1.0" encoding="UTF-8"?>
 <jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"
     jcr:primaryType="sling:OsgiConfig"
-    rootSiteUrl="http://www.mysite.com"
-    useFastPurge="{Boolean}true"/>
+    rootSiteUrl="http://www.mysite.com"/>
 ```
 
 rootSiteUrl: The root site url that is prepended to the path being invalidated.
-useFastPurge: Whether the Job should use the CCU v3 Fast Purge API or the v2 old API
+## Administration Page
+
 ## Who are we
 
 Velir is a Web Agency that provides a large scale of expertise in user experience design, content management, and marketing platform integrations. Our clients partner with us

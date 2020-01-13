@@ -6,56 +6,48 @@ package com.velir.aem.akamai.ccu
  * @author Sebastien Bernard
  */
 interface CcuManager {
+
 	/**
-	 * Purge using url and default params. If url is null return PurgeReponse with httpStatus = -1
+	 * Purge using url and default params. If url is null return FastPurgeResponse with httpStatus = -1
 	 * @param url the url to purge
-	 * @return a {@link PurgeResponse}
+	 * @return a {@link FastPurgeResponse}
 	 */
-	PurgeResponse purgeByUrl(String url)
+	FastPurgeResponse fastPurgeByUrl(String url)
 
 	/**
-	 * Purge using urls collection and default params. If urls is null or empty return PurgeReponse with httpStatus = -1
+	 * Purge using urls collection and default params. If urls is null or empty return FastPurgeResponse with httpStatus = -1
 	 * @param urls the collection of urls to purge
-	 * @return a {@link PurgeResponse}
+	 * @return a {@link FastPurgeResponse}
 	 */
-	PurgeResponse purgeByUrls(Collection<String> urls)
+	FastPurgeResponse fastPurgeByUrls(Collection<String> urls)
 
 	/**
-	 * Purge using cpCode and default params. If cpCode is null return PurgeReponse with httpStatus = -1
+	 * Purge using cpCode and default params. If cpCode is null return FastPurgeResponse with httpStatus = -1
 	 * @param cpCode the cpCode to purge
-	 * @return a {@link PurgeResponse}
+	 * @return a {@link FastPurgeResponse}
 	 */
-	PurgeResponse purgeByCpCode(String cpCode)
+	FastPurgeResponse fastPurgeByCpCode(String cpCode)
 
 	/**
-	 * Purge using CPCodes collection and default params. If cpCodes is null or empty return PurgeReponse with httpStatus = -1
+	 * Purge using CPCodes collection and default params. If cpCodes is null or empty return FastPurgeResponse with httpStatus = -1
 	 * @param cpCodes the collection of urls to purge
-	 * @return a {@link PurgeResponse}
+	 * @return a {@link FastPurgeResponse}
 	 */
-	PurgeResponse purgeByCpCodes(Collection<String> cpCodes)
+	FastPurgeResponse fastPurgeByCpCodes(Collection<String> cpCodes)
 
 	/**
-	 * Purge method where you can specify all params for your akamai request. If objects is null or empty return PurgeReponse with httpStatus = -1
-	 * @param objects the collection of object to invalidate
-	 * @param purgeType the purgeType to use
-	 * @param purgeAction the purgeAction to use
-	 * @param purgeDomain the purgeDomain to use
-	 * @return a {@link PurgeResponse}
+	 * Purge using tag and default params. If url is null return FastPurgeResponse with httpStatus = -1
+	 * @param tag the tag to purge
+	 * @return a {@link FastPurgeResponse}
 	 */
-	PurgeResponse purge(Collection<String> objects, PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain)
+	FastPurgeResponse fastPurgeByTag(String tag)
 
 	/**
-	 * Return the status of a purge
-	 * @param progressUri the purge uri
-	 * @return a {@link PurgeStatus}
+	 * Purge using tag collection and default params. If urls is null or empty return FastPurgeResponse with httpStatus = -1
+	 * @param tags the collection of tags to purge
+	 * @return a {@link FastPurgeResponse}
 	 */
-	PurgeStatus getPurgeStatus(String progressUri)
-
-	/**
-	 * Return the status of the queue with the number of objects waiting to be purge.
-	 * @return a {@link QueueStatus}
-	 */
-	QueueStatus getQueueStatus()
+	FastPurgeResponse fastPurgeByTags(Collection<String> tags)
 
 	/**
 	 * Performs a fast purge for multiple object types on default params

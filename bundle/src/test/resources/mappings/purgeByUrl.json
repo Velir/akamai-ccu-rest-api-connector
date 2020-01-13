@@ -1,7 +1,7 @@
 {
     "request": {
         "method": "POST",
-        "url": "/ccu/v2/queues/default",
+        "url": "/ccu/v3/delete/cpcode/staging",
         "bodyPatterns": [
             { "doesNotMatch": ".*error.*" }
         ]
@@ -12,6 +12,6 @@
             "Content-Type": "application/json",
             "Cache-Control": "no-cache"
         },
-        "body": "{\"httpStatus\" : 201,\"detail\" : \"Request accepted.\",\"estimatedSeconds\" : 420,\"purgeId\" : \"95b5a092-043f-4af0-843f-aaf0043faaf0\",\"progressUri\" : \"/ccu/v2/purges/95b5a092-043f-4af0-843f-aaf0043faaf0\",\"pingAfterSeconds\" : 420,\"supportId\" : \"17PY1321286429616716-211907680\"}"
+        "body": "{\"httpStatus\" : 201,\"detail\" : \"Request accepted\",\"estimatedSeconds\" : 5,\"purgeId\" : \"95b5a092-043f-4af0-843f-aaf0043faaf0\",\"supportId\" : \"17PY1321286429616716-211907680\"}"
     }
 }

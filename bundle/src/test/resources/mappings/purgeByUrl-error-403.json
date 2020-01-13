@@ -1,7 +1,7 @@
 {
     "request": {
         "method": "POST",
-        "url": "/ccu/v2/queues/default",
+        "url": "/ccu/v3/delete/url/staging",
         "bodyPatterns": [
             {
                 "equalToJson": "{\"objects\": [\"http://error-403\"]}",

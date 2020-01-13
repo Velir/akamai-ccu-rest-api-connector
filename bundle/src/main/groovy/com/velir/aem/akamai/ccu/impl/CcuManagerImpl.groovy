@@ -14,10 +14,10 @@ import java.security.InvalidParameterException
 import java.util.concurrent.Future
 
 import static groovyx.net.http.ContentType.JSON
-import static groovyx.net.http.Method.GET
 import static groovyx.net.http.Method.POST
 import static org.apache.commons.lang.StringUtils.EMPTY
 import static org.apache.sling.commons.osgi.PropertiesUtil.toString
+
 /**
  * CcuManagerImpl -
  *
@@ -34,13 +34,11 @@ import static org.apache.sling.commons.osgi.PropertiesUtil.toString
 class CcuManagerImpl implements CcuManager {
 	private static final Logger LOG = LoggerFactory.getLogger(CcuManagerImpl)
 	private static final String DEFAULT_CCU_URL = "https://api.ccu.akamai.com"
-	static final PurgeAction DEFAULT_PURGE_ACTION = PurgeAction.REMOVE
-	static final PurgeDomain DEFAULT_PURGE_DOMAIN = PurgeDomain.PRODUCTION
-	static final String AUTHORIZATION = 'Authorization'
-	static final String QUEUES_PATH = "/ccu/v2/queues/default"
+	private static final PurgeAction DEFAULT_PURGE_ACTION = PurgeAction.REMOVE
+	private static final PurgeDomain DEFAULT_PURGE_DOMAIN = PurgeDomain.PRODUCTION
+	private static final String AUTHORIZATION = 'Authorization'
 	private static final String FAST_PURGE_URI_BASE =  '/ccu/v3/%1$s/%2$s/%3$s'
-	static final String UTF_8 = "UTF-8"
-	private static final Closure VAL_NOT_NULL = { key, value -> value }
+	private static final String UTF_8 = "UTF-8"
 	private static final int DEFAULT_POOL_SIZE = 5
 
 	@Property(name = "rootCcuUrl", label = "Akamai CCU API URL", value = "https://api.ccu.akamai.com")
@@ -54,67 +52,6 @@ class CcuManagerImpl implements CcuManager {
 
 	private AsyncHTTPBuilder asyncHTTPBuilder
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	PurgeResponse purgeByUrl(String url) {
-		purgeByUrls([url])
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	PurgeResponse purgeByUrls(Collection<String> urls) {
-		purge(urls, PurgeType.ARL, defaultPurgeAction, defaultPurgeDomain)
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	PurgeResponse purgeByCpCode(String cpCode) {
-		purgeByCpCodes([cpCode])
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	PurgeResponse purgeByCpCodes(Collection<String> cpCodes) {
-		purge(cpCodes, PurgeType.CPCODE, defaultPurgeAction, defaultPurgeDomain)
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	PurgeResponse purge(Collection<String> objects, PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain) {
-		Collection<String> uniqueObjects = removeDuplicate(objects)
-		if (!uniqueObjects) {
-			LOG.warn("No objects to invalidate")
-			return PurgeResponse.noResponse()
-		}
-
-		logDebug(purgeType, purgeAction, purgeDomain, uniqueObjects)
-		HashMap postBody = [
-			type   : purgeType.name().toLowerCase(),
-			action : purgeAction.name().toLowerCase(),
-			domain : purgeDomain.name().toLowerCase(),
-			objects: uniqueObjects,
-		]
-		Future response = asyncHTTPBuilder.request(POST, JSON) {
-			uri.path = QUEUES_PATH
-			headers[AUTHORIZATION] = getAuth(QUEUES_PATH, postBody, POST, headers as HashMap)
-			body = postBody
-		}
-		def json = response.get()
-		PurgeResponse purgeResponse = new PurgeResponse(json.findAll(VAL_NOT_NULL))
-		LOG.debug("Response {}", purgeResponse)
-		purgeResponse
-	}
-
 	private String getAuth(String path, HashMap body, Method method, HashMap headers) {
 		Authorization.builder()
 					 .credentials(credentials).path(path).body(body)
@@ -122,7 +59,7 @@ class CcuManagerImpl implements CcuManager {
 					 .build().authorization
 	}
 
-	private static void logDebug(PurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain, Collection<String> uniqueObjects) {
+	private static void logDebug(FastPurgeType purgeType, PurgeAction purgeAction, PurgeDomain purgeDomain, Collection<String> uniqueObjects) {
 		if(LOG.isDebugEnabled()){
 			LOG.debug("Request:")
 			LOG.debug("Type: {}", purgeType)
@@ -142,36 +79,34 @@ class CcuManagerImpl implements CcuManager {
 		objects.unique()
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	PurgeStatus getPurgeStatus(String progressUri) {
-		if (!progressUri) {
-			return PurgeStatus.noStatus()
-		}
-
-		Future response = asyncHTTPBuilder.request(GET, JSON){
-			uri.path = progressUri
-			headers[AUTHORIZATION] = getAuth(progressUri, [:] as HashMap, GET, headers as HashMap)
-		}
-		def json = response.get()
-		LOG.debug("purge response {}", json)
-		new PurgeStatus(json.findAll(VAL_NOT_NULL))
+	FastPurgeResponse fastPurgeByUrl(String url) {
+		fastPurgeByUrls([url])
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	QueueStatus getQueueStatus() {
-		Future response = asyncHTTPBuilder.request(GET, JSON){
-			uri.path = QUEUES_PATH
-			headers[AUTHORIZATION] = getAuth(QUEUES_PATH, [:] as HashMap, GET, headers as HashMap)
-		}
-		def json = response.get()
-		LOG.debug("Queue status response {}", json)
-		new QueueStatus(json.findAll(VAL_NOT_NULL))
+	FastPurgeResponse fastPurgeByUrls(Collection<String> urls) {
+		fastPurge(urls, FastPurgeType.URL)
+	}
+
+	@Override
+	FastPurgeResponse fastPurgeByCpCode(String cpCode) {
+		fastPurgeByCpCodes([cpCode])
+	}
+
+	@Override
+	FastPurgeResponse fastPurgeByCpCodes(Collection<String> cpCodes) {
+		fastPurge(cpCodes, FastPurgeType.CPCODE)
+	}
+
+	@Override
+	FastPurgeResponse fastPurgeByTag(String tag) {
+		fastPurgeByTags([tag])
+	}
+
+	@Override
+	FastPurgeResponse fastPurgeByTags(Collection<String> tags) {
+		fastPurge(tags, FastPurgeType.TAG)
 	}
 
 	@Override
@@ -181,8 +116,14 @@ class CcuManagerImpl implements CcuManager {
 
 	@Override
 	FastPurgeResponse fastPurge(Collection<String> objects, FastPurgeType type, PurgeAction purgeAction, PurgeDomain purgeDomain) {
+		Collection<String> uniqueObjects = removeDuplicate(objects)
+		if (!uniqueObjects) {
+			LOG.warn("No objects to invalidate")
+			return FastPurgeResponse.noResponse()
+		}
 		String purgeUri = sprintf(FAST_PURGE_URI_BASE, [purgeAction.apiVal, type.name().toLowerCase(), purgeDomain.name().toLowerCase()])
-		Map postBody = [objects : objects]
+		Map postBody = [objects : uniqueObjects]
+		logDebug(type, purgeAction, purgeDomain, uniqueObjects)
 		Future future = asyncHTTPBuilder.request(POST, JSON){
 			uri.path = purgeUri
 			headers[AUTHORIZATION] = getAuth(purgeUri, postBody as HashMap, POST, headers as HashMap)

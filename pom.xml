@@ -344,6 +344,17 @@
 				<artifactId>maven-source-plugin</artifactId>
 				<version>2.2.1</version>
 			</plugin>
+			<plugin>
+				<groupId>com.day.jcr.vault</groupId>
+				<artifactId>content-package-maven-plugin</artifactId>
+				<version>0.0.24</version>
+				<extensions>true</extensions>
+				<configuration>
+					<failOnError>true</failOnError>
+					<userId>${crx.username}</userId>
+					<password>${crx.password}</password>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

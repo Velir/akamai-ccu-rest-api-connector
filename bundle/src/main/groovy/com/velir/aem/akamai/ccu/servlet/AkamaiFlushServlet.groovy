@@ -41,19 +41,19 @@ class AkamaiFlushServlet extends SlingAllMethodsServlet {
 		response.contentType = JSON
 		List<String> objects = request.getParameterValues(OBJ)?:[] as List<String>
 		String objType = request.getParameter(OBJ_TYPE) ?: URL
-		CcuResponse ccuResponse = getApiResponse(objects, objType)
+		FastPurgeResponse ccuResponse = getApiResponse(objects, objType)
 		response.writer.write(toJson(ccuResponse))
 	}
 
-	private CcuResponse getApiResponse(List<String> objects, String objType) {
-		CcuResponse ccuResponse = new PurgeResponse()
+	private FastPurgeResponse getApiResponse(List<String> objects, String objType) {
+		FastPurgeResponse ccuResponse = new FastPurgeResponse()
 		if (objects && objType) {
 			LOG.debug("Flushing objects {} type {}", objects.join(JOIN), objType)
 			try {
 				ccuResponse = fastPurge(objects, objType)
 			} catch (e) {
 				LOG.error("Error flushing Akamai", e)
-				ccuResponse = new PurgeResponse(httpStatus: SC_INTERNAL_SERVER_ERROR, detail: e.message)
+				ccuResponse = new FastPurgeResponse(httpStatus: SC_INTERNAL_SERVER_ERROR, detail: e.message)
 			}
 		}
 		ccuResponse

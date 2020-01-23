@@ -1,10 +1,10 @@
-<div id="akamai-clear-app" class="coral--dark">
+<div id="akamai-clear-app" class="coral--light">
     <div  class="coral-Form-fieldwrapper">
         <coral-fileupload async name="file"  id="objects-upload" action="" accept="application/json, application/javascript, text/javascript">
-            <button coral-fileupload-select is="coral-button">Choose json flush files...</button>
+            <button coral-fileupload-select is="coral-button">Choose json flush file...</button>
         </coral-fileupload>
         <coral-tooltip target="_prev" placement="left">
-            <coral-tooltip-content>JSON file in form {"objects": ["obj1", "obj2"], "type" : "URL"}<br/>types: URL, CPCODE, or TAG</coral-tooltip-content>
+            <coral-tooltip-content>JSON file in form {"objects": ["obj1", "obj2"], "type" : "URL"}<br/>types: URL, CPCODE, or TAG. Only used to populate the form.</coral-tooltip-content>
         </coral-tooltip>
     </div>
     <form id="akamai-clear-form" class="coral-Form--vertical cq-dialog foundation-form foundation-layout-form" action="/bin/velir/flushakamai" method="post" data-foundation-form-ajax="true" data-foundation-form-response-ui-success='{"name": "velir.flush-akamai"}'>

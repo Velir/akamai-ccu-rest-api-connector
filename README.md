@@ -35,7 +35,7 @@ The minimum configuration needed for that service are your Akamai API tokens and
 - AkamaiEventHandler is an event handler that listens to com/day/cq/replication by default and just adds a job to a dedicated queue ("com/velir/aem/akamai/ccu/impl/FlushAkamaiItemsJob")
 if the path to invalidate begins with one of the values specified in the list "pathsHandled" (By default it is /content/dam).
 
-- FlushAkamaiItemsJob is the job that listens to the queue "com/velir/aem/akamai/ccu/impl/FlushAkamaiItemsJob" and calls the CCuManager.purgeByUrls(...) with the list of paths to
+- FlushAkamaiItemsJob is the job that listens to the queue "com/velir/aem/akamai/ccu/impl/FlushAkamaiItemsJob" and calls the CCuManager.fastPurgeByUrls(...) with the list of paths to
 invalidate. These paths are prepended by the rootUrl that represent the scheme + the domain without / at the end.
 ex: rootSiteUrl = "http://www.velir.com" and url = "/test" => The path to invalidate will be "http://www.velir.com/test"
 
@@ -52,12 +52,12 @@ Each of these classes can be configured to fit you need and your Akamai credenti
 <jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"
     jcr:primaryType="sling:OsgiConfig"
     rootCcuUrl="https://api.ccu.akamai.com"
-	clientToken="your_clientSecret"
-	clientSecret="your_clientSecret"
-	accessToken="your_accessToken"
-	defaultPurgeAction="remove"
-	defaultPurgeDomain="production"
-	threadPoolSize="5"/>
+    clientToken="your_clientSecret"
+    clientSecret="your_clientSecret"
+    accessToken="your_accessToken"
+    defaultPurgeAction="remove"
+    defaultPurgeDomain="production"
+    threadPoolSize="5"/>
 ```
 For more info on credentials see https://developer.akamai.com/introduction/Prov_Creds.html
 
@@ -77,7 +77,7 @@ threadPoolSize : Number of threads to dedicate to the API HTTP Client. Defaults 
 <?xml version="1.0" encoding="UTF-8"?>
 <jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"
     jcr:primaryType="sling:OsgiConfig"
-	pathsHandled="[/content/dam]"/>
+    pathsHandled="[/content/dam]"/>
 ```
 
 pathsHandled: Comma separated list of paths that can be invalidated.
@@ -93,6 +93,27 @@ pathsHandled: Comma separated list of paths that can be invalidated.
 
 rootSiteUrl: The root site url that is prepended to the path being invalidated.
 ## Administration Page
+
+We've included a small administration page that can be found in the Velir section on AEM Tools. Example localhost direct url: [http://localhost:4502/etc/velir/akamaiflush.html](http://localhost:4502/etc/velir/akamaiflush.html)
+
+This page is simple and allows administrators to manually flush urls without a replication event. Use cases for this would be after a deployment or in an emergency where needed production objects are stale in the CDN. 
+The benefit of this page, is that AEM administrators can access  this functionality without having to be provided access the Luna control center.
+
+The admin page can be filled in manually with URLS/ARLs, tags or CP codes and is currently limited to one object type per request.
+
+Also, you can load the form via json file on the 'Choose json flush file' button. This takes in a json file in the following format, specifying objects and object type.
+```json
+{
+	"objects":[
+		"https://www.velir.com/object1",
+		"https://www.velir.com/object2"
+	],
+	"type" : "URL"
+}
+```
+Type is optional, but can be values URL, CPCODE or TAG. 
+
+This option can be used if there is a repeatable series of objects that might need regular flushing, such as in after deployments.
 
 ## Who are we
 

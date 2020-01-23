@@ -1,42 +1,50 @@
 <div id="akamai-clear-app" class="coral--dark">
+    <div  class="coral-Form-fieldwrapper">
+        <coral-fileupload async name="file"  id="objects-upload" action="" accept="application/json, application/javascript, text/javascript">
+            <button coral-fileupload-select is="coral-button">Choose json flush files...</button>
+        </coral-fileupload>
+        <coral-tooltip target="_prev" placement="left">
+            <coral-tooltip-content>JSON file in form {"objects": ["obj1", "obj2"], "type" : "URL"}<br/>types: URL, CPCODE, or TAG</coral-tooltip-content>
+        </coral-tooltip>
+    </div>
     <form id="akamai-clear-form" class="coral-Form--vertical cq-dialog foundation-form foundation-layout-form" action="/bin/velir/flushakamai" method="post" data-foundation-form-ajax="true" data-foundation-form-response-ui-success='{"name": "velir.flush-akamai"}'>
-            <coral-dialog-content>
-                <input type="hidden" name="_charset_" value="utf-8"/>
-                <div  class="cq-dialog-content">
+        <coral-dialog-content>
+            <input type="hidden" name="_charset_" value="utf-8"/>
+            <div  class="cq-dialog-content">
+                <div>
                     <div>
-                        <div>
-                            <div  class="coral-Form-fieldwrapper">
-                                <label id="label_ae158647-c8af-4f61-8af5-5632d183f29c" class="coral-Form-fieldlabel">Objects</label>
-                                <coral-multifield  class="coral-Form-field" aria-labelledby="label_ae158647-c8af-4f61-8af5-5632d183f29c description_ae158647-c8af-4f61-8af5-5632d183f29c" data-foundation-validation="" data-validation="" data-granite-coral-multifield-name="obj">
-                                    <button type="button" is="coral-button" coral-multifield-add>Add Object</button>
-                                    <template coral-multifield-template>
-                                        <foundation-autocomplete  name="obj" pickersrc="/mnt/overlay/granite/ui/content/coral/foundation/form/pathfield/picker.html?_charset_=utf-8&amp;path={value}&amp;root=%2fcontent&amp;filter=hierarchyNotFile&amp;selectionCount=single" data-foundation-validation="">
-                                            <coral-overlay  foundation-autocomplete-suggestion="" class="foundation-picker-buttonlist" data-foundation-picker-buttonlist-src="/mnt/overlay/granite/ui/content/coral/foundation/form/pathfield/suggestion{.offset,limit}.html?_charset_=utf-8&amp;root=%2fcontent&amp;filter=hierarchyNotFile{&amp;query}"></coral-overlay>
-                                            <coral-taglist  foundation-autocomplete-value="" name="obj">
-                                                <coral-tag value=""></coral-tag>
-                                            </coral-taglist>
-                                        </foundation-autocomplete>
-                                    </template>
-                                </coral-multifield>
-                                <coral-icon class="coral-Form-fieldinfo" icon="infoCircle" tabindex="0" alt="description"></coral-icon>
-                                <coral-tooltip target="_prev" placement="left" id="description_ae158647-c8af-4f61-8af5-5632d183f29c">
-                                    <coral-tooltip-content>Full URL, AR, CP Code, or tags but choose one object type per request.</coral-tooltip-content>
-                                </coral-tooltip>
-                            </div>
-                            <div  class="coral-Form-fieldwrapper">
-                                <label id="label_90aa26e1-2746-4c11-98a7-1dbd62d59a89" class="coral-Form-fieldlabel">Object Type</label>
-                                <coral-select  class="coral-Form-field" name="objType" labelledby="label_90aa26e1-2746-4c11-98a7-1dbd62d59a89">
-                                    <coral-select-item  value="URL">URL or ARL</coral-select-item>
-                                    <coral-select-item  value="CPCODE">CP Code</coral-select-item>
-                                    <coral-select-item  value="TAG">Tag</coral-select-item>
-                                </coral-select>
-                            </div>
+                        <div  class="coral-Form-fieldwrapper">
+                            <label id="label_ae158647-c8af-4f61-8af5-5632d183f29c" class="coral-Form-fieldlabel">Objects</label>
+                            <coral-multifield id="objMulti" class="coral-Form-field" aria-labelledby="label_ae158647-c8af-4f61-8af5-5632d183f29c description_ae158647-c8af-4f61-8af5-5632d183f29c" data-foundation-validation="" data-validation="" data-granite-coral-multifield-name="obj">
+                                <button type="button" is="coral-button" class="js-coral-Multifield-add" coral-multifield-add>Add Object</button>
+                                <template coral-multifield-template>
+                                    <foundation-autocomplete  name="obj" pickersrc="/mnt/overlay/granite/ui/content/coral/foundation/form/pathfield/picker.html?_charset_=utf-8&amp;path={value}&amp;root=%2fcontent&amp;filter=hierarchyNotFile&amp;selectionCount=single" data-foundation-validation="">
+                                        <coral-overlay  foundation-autocomplete-suggestion="" class="foundation-picker-buttonlist" data-foundation-picker-buttonlist-src="/mnt/overlay/granite/ui/content/coral/foundation/form/pathfield/suggestion{.offset,limit}.html?_charset_=utf-8&amp;root=%2fcontent&amp;filter=hierarchyNotFile{&amp;query}"></coral-overlay>
+                                        <coral-taglist  foundation-autocomplete-value="" name="obj">
+                                            <coral-tag value=""></coral-tag>
+                                        </coral-taglist>
+                                    </foundation-autocomplete>
+                                </template>
+                            </coral-multifield>
+                            <coral-icon class="coral-Form-fieldinfo" icon="infoCircle" tabindex="0" alt="description"></coral-icon>
+                            <coral-tooltip target="_prev" placement="left" id="description_ae158647-c8af-4f61-8af5-5632d183f29c">
+                                <coral-tooltip-content>Full URL, AR, CP Code, or tags but choose one object type per request.</coral-tooltip-content>
+                            </coral-tooltip>
+                        </div>
+                        <div  class="coral-Form-fieldwrapper">
+                            <label id="label_90aa26e1-2746-4c11-98a7-1dbd62d59a89" class="coral-Form-fieldlabel">Object Type</label>
+                            <coral-select id="typeSelect" class="coral-Form-field" name="objType" labelledby="label_90aa26e1-2746-4c11-98a7-1dbd62d59a89">
+                                <coral-select-item  value="URL">URL or ARL</coral-select-item>
+                                <coral-select-item  value="CPCODE">CP Code</coral-select-item>
+                                <coral-select-item  value="TAG">Tag</coral-select-item>
+                            </coral-select>
                         </div>
                     </div>
-                    <button is="coral-button" variant="primary" icon="checkCircle" iconsize="S" size="L">
-                        Fast Flush
-                    </button>
                 </div>
-            </coral-dialog-content>
-        </form>
+                <button is="coral-button" variant="primary" icon="checkCircle" iconsize="S" size="L">
+                    Fast Flush
+                </button>
+            </div>
+        </coral-dialog-content>
+    </form>
 </div>

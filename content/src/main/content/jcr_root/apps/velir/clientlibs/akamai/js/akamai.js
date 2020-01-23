@@ -1,5 +1,5 @@
 
-(function($, ns) {
+(function($, ns, document) {
 	"use strict";
 	const OK = [{text:"Ok"}];
 	let registry = $(window).adaptTo("foundation-registry");
@@ -18,7 +18,38 @@
 			} else{
 				ui.prompt("Error", `Error flushing paths: ${resp.detail}`, 'error', OK);
 			}
-
 		}
 	});
-}(window.jQuery, window.velirTouchUI = window.velirTouchUI || {}));
+	const readFile = evt => {
+		let file = evt.detail.item.file;
+		if(file.type.indexOf("/json") === -1){
+			return;
+		}
+		let reader = new FileReader();
+		reader.addEventListener("load", () => {
+			const json = JSON.parse(reader.result);
+			const objects = json.objects;
+			const type = json.type;
+			const objMulti = document.getElementById('objMulti');
+			objMulti.querySelectorAll(".coral3-Multifield-remove").forEach(rm =>rm.click());
+			objects.forEach(obj => {
+				objMulti.querySelector('.js-coral-Multifield-add').click();
+				const last = objMulti.querySelector('coral-multifield-item:last-of-type');
+				Coral.commons.ready(last, el => {
+					const picker = el.querySelector('foundation-autocomplete');
+					picker.value = obj;
+				});
+			});
+			const select = document.getElementById('typeSelect');
+			select.items.getAll().forEach((item) => {
+				if(item.value === type){
+					item.selected = true;
+				}
+			});
+		});
+		reader.readAsText(file);
+	};
+	$(document).ready(() => {
+		document.getElementById('objects-upload').addEventListener('coral-fileupload:fileadded', readFile)
+	});
+}(window.jQuery, window.velirTouchUI = window.velirTouchUI || {}, document));

@@ -3,11 +3,11 @@
 <properties>
 <comment>FileVault Package Properties</comment>
 <entry key="buildCount">1</entry>
-<entry key="version">2.6-SNAPSHOT</entry>
+<entry key="version">2.6</entry>
 <entry key="dependencies" />
 <entry key="packageFormatVersion">2</entry>
 <entry key="description">Velir Akakami Content Package</entry>
 <entry key="group">velir</entry>
 <entry key="name">akamai</entry>
-<entry key="path">/etc/packages/velir/velir-akamai-2.6-SNAPSHOT.zip</entry>
+<entry key="path">/etc/packages/velir/velir-akamai-2.6.zip</entry>
 </properties>

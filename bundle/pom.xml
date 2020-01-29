@@ -29,7 +29,11 @@
 			<groupId>org.apache.sling</groupId>
 			<artifactId>org.apache.sling.settings</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>com.adobe.aem</groupId>
+			<artifactId>uber-jar</artifactId>
+			<classifier>apis</classifier>
+		</dependency>
 		<!-- Felix/OSGI -->
 		<dependency>
 			<groupId>org.apache.felix</groupId>

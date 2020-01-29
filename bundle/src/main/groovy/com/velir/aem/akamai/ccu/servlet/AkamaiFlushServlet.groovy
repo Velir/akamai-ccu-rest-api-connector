@@ -2,15 +2,24 @@ package com.velir.aem.akamai.ccu.servlet
 
 import com.velir.aem.akamai.ccu.*
 import groovyx.net.http.ContentType
+import org.apache.felix.scr.annotations.Component
+import org.apache.felix.scr.annotations.Property
+import org.apache.felix.scr.annotations.Properties
 import org.apache.felix.scr.annotations.Reference
+import org.apache.felix.scr.annotations.Service
 import org.apache.felix.scr.annotations.sling.SlingServlet
 import org.apache.http.HttpStatus
+import org.apache.jackrabbit.api.security.user.User
+import org.apache.jackrabbit.api.security.user.UserManager
 import org.apache.sling.api.SlingHttpServletRequest
 import org.apache.sling.api.SlingHttpServletResponse
 import org.apache.sling.api.servlets.SlingAllMethodsServlet
+import org.apache.sling.commons.osgi.PropertiesUtil
+import org.osgi.service.component.ComponentContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import javax.servlet.Servlet
 import javax.servlet.ServletException
 
 import static groovy.json.JsonOutput.toJson
@@ -23,14 +32,23 @@ import static org.apache.http.HttpStatus.SC_OK
  *
  * @author Kai Rasmussen
  */
-@SlingServlet(paths ="/bin/velir/flushakamai", methods = "POST")
+@Component(label = "Akamai Admin Flush Servlet", metatype = true, immediate = true)
+@Service(value = Servlet)
+@Properties(value = [
+    @Property(name = "sling.servlet.paths", value = "/bin/velir/flushakamai", propertyPrivate = true),
+	@Property(name = "sling.servlet.methods ", value = "POST", propertyPrivate = true),
+	@Property(name = "allowedGroups", value = [], cardinality = Integer.MAX_VALUE)
+])
 class AkamaiFlushServlet extends SlingAllMethodsServlet {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AkamaiFlushServlet)
+	private static final FastPurgeResponse NOT_ALLOWED = new FastPurgeResponse(httpStatus: HttpStatus.SC_FORBIDDEN, detail: "Forbidden")
 	private static final String URL = "URL"
 	private static final String OBJ = "obj"
 	private static final String OBJ_TYPE = "objType"
 	private static final String JOIN = ", "
+
+	private Set<String> allowedGroups
 
 	@Reference
 	private CcuManager ccuManager
@@ -39,6 +57,10 @@ class AkamaiFlushServlet extends SlingAllMethodsServlet {
 	protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
 		response.status = SC_OK
 		response.contentType = JSON
+		if(!allowed(request)){
+			response.writer.write(toJson(NOT_ALLOWED))
+			return
+		}
 		List<String> objects = request.getParameterValues(OBJ)?:[] as List<String>
 		String objType = request.getParameter(OBJ_TYPE) ?: URL
 		FastPurgeResponse ccuResponse = getApiResponse(objects, objType)
@@ -62,5 +84,22 @@ class AkamaiFlushServlet extends SlingAllMethodsServlet {
 	private FastPurgeResponse fastPurge(List<String> objects, String objType) {
 		FastPurgeType type = objType as FastPurgeType
 		ccuManager.fastPurge(objects, type)
+	}
+
+	void activate(ComponentContext context) {
+		Dictionary props = context.properties
+		allowedGroups = PropertiesUtil.toStringArray(props.get("allowedGroups"), [] as String[]) as Set
+	}
+
+	boolean allowed(SlingHttpServletRequest request) {
+		boolean allowed = false
+		try{
+			User user = request.resourceResolver.adaptTo(UserManager).getAuthorizable(request.userPrincipal) as User
+			def groups = user.memberOf()*.ID
+			allowed = !allowedGroups || groups.intersect(allowedGroups)
+		} catch(e){
+			LOG.error("Error determining allowed", e)
+		}
+		allowed
 	}
 }

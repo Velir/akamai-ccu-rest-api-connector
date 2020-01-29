@@ -114,6 +114,18 @@ Also, you can load the form via json file on the 'Choose json flush file' button
 Type is optional, but can be values URL, CPCODE or TAG. 
 
 This option can be used if there is a repeatable series of objects that might need regular flushing, such as in after deployments.
+#### Administration Security
+
+It is recommended to limit the usage of the akamai flush administration page and endpoint to approved users. This is to limit usage to users who know what they are doing and are authorized to do so.  First, you can deny access to the admin page itself, /etc/velir/akamaiflush, which should be blocked for most user groups by default in newer versions of AEM.
+Secondly, it is highly recommended to configure the API endpoint servlet to do the same.
+
+- AkamaiFlushServlet: com.velir.aem.akamai.ccu.servlet.AkamaiFlushServlet.xml
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"
+    jcr:primaryType="sling:OsgiConfig"
+    allowedGroups="[administrators,akamai-flush-admin]"/>
+```
 
 ## Who are we
 
